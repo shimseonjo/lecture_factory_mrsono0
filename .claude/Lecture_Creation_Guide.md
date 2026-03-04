@@ -234,18 +234,27 @@ lectures/
 
 ## 리서치 출처
 
-- Carnegie Mellon Eberly Center (강의계획서 설계)
-- NC State DELTA (AI 지원 코스 설계)
-- GAIDE Framework, Purdue University (arXiv:2308.12276)
+### 교수설계 프레임워크
 - Virginia Tech CETL (Backward Design)
+- Design Council UK, Double Diamond Framework
 - Quality Matters Rubric 7th Edition
 - OLC Course Review Scorecard
-- PMC Naegle 2021 (Ten Simple Rules for Effective Slides)
-- PMC Gottlieb et al. 2024 (Educator's Blueprint)
-- McGill University Teaching KB (교육용 슬라이드 설계)
-- Marp, Slidev, reveal.js 공식 문서
+
+### AI 기반 교육 콘텐츠 설계
+- GAIDE Framework, Purdue University (arXiv:2308.12276)
+- NC State DELTA (AI 지원 코스 설계)
 - EduCraft System, Tsinghua University (CIKM 2025)
+- IdeaSynth, arXiv:2410.04025 (문헌 기반 반복 아이디어 개발)
+
+### 브레인스토밍 · 창의적 아이디어 생성
 - Minas et al. 2018, Decision Sciences (프라이밍과 전자 브레인스토밍)
 - Kohn & Smith 2011, Applied Cognitive Psychology (고착 효과)
-- IdeaSynth, arXiv:2410.04025 (문헌 기반 반복 아이디어 개발)
-- Design Council UK, Double Diamond Framework
+
+### 강의 · 교안 설계
+- Carnegie Mellon Eberly Center (강의계획서 설계)
+- PMC Gottlieb et al. 2024 (Educator's Blueprint)
+
+### 슬라이드 설계
+- PMC Naegle 2021 (Ten Simple Rules for Effective Slides)
+- McGill University Teaching KB (교육용 슬라이드 설계)
+- Marp, Slidev, reveal.js 공식 문서
