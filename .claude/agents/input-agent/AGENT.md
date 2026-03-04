@@ -102,8 +102,16 @@ PBL + AI-first, 실습 비율 50% 이상
 
 | 소스 유형 | 입력 방식 | Phase 2에서의 분석 방법 |
 |-----------|----------|----------------------|
-| 로컬 폴더 | 폴더 경로 입력 | research-agent가 Glob+Read로 스캔·분석 |
-| NotebookLM | 공유 URL 입력 | research-agent가 NBLM 스킬로 소스 쿼리 |
+| 로컬 폴더 | **폴더 이름만 입력** (기본 위치: 프로젝트 루트) | research-agent가 Glob+Read로 스캔·분석 |
+| NotebookLM | **URL 직접 입력** (Other 선택 → URL 붙여넣기) | research-agent가 NBLM 스킬로 소스 쿼리 |
+
+**Q11 질문 구현 가이드**:
+
+1. **로컬 폴더**: "참고할 폴더 이름을 입력하세요 (프로젝트 루트 기준)" 형태로 질문.
+   사용자가 `docs`를 입력하면 → `{프로젝트루트}/docs`로 자동 변환하여 저장.
+   프로젝트 루트는 Skill 실행 시점의 작업 디렉토리 사용.
+2. **NotebookLM**: "NotebookLM 공유 URL을 입력하세요" 형태로 질문.
+   선택지 없이 Other(직접 입력)로 URL을 받음.
 
 ## 워크플로우별 동작
 

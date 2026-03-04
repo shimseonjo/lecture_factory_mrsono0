@@ -113,13 +113,13 @@
         "type": "array",
         "items": "string",
         "default": [],
-        "description": "Q11: 로컬 폴더 경로 목록 (Phase 2에서 분석)"
+        "description": "Q11: 로컬 폴더 경로 목록. 사용자는 폴더 이름만 입력하고, 에이전트가 프로젝트 루트 기준 절대경로로 변환하여 저장 (Phase 2에서 분석)"
       },
       "notebooklm_urls": {
         "type": "array",
         "items": "string",
         "default": [],
-        "description": "Q11: NotebookLM 공유 URL 목록 (Phase 2에서 NBLM 스킬로 분석)"
+        "description": "Q11: NotebookLM 공유 URL 목록. 사용자가 직접 URL 입력 (Phase 2에서 NBLM 스킬로 분석)"
       }
     },
     "context": {
