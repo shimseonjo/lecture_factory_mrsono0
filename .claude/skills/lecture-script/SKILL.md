@@ -22,3 +22,16 @@ $ARGUMENTS
 ### Phase 5: 교안 구조 설계 → architecture-agent (도입-전개-정리, Gagne 9사태)
 ### Phase 6: 교안 작성 → writer-agent (섹션별 스크립트, 발문, 활동, 평가문항)
 ### Phase 7: 품질 검토 → review-agent (목표-활동-평가 정렬, 시간 배분)
+
+## 산출물 (02_script/)
+
+```
+lectures/YYYY-MM-DD_{강의명}/02_script/
+├── input_data.json              # Phase 1: 구성안 로드 + 교수법 선택
+├── research_exploration.md      # Phase 2: 탐색적 리서치
+├── brainstorm_result.md         # Phase 3: 브레인스토밍
+├── research_deep.md             # Phase 4: 심화 리서치
+├── architecture.md              # Phase 5: 교안 구조 설계
+├── lecture_script.md            # Phase 6: 최종 교안 ★
+└── quality_review.md            # Phase 7: 품질 검토
+```

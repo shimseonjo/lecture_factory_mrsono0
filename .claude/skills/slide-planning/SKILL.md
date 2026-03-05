@@ -20,3 +20,14 @@ $ARGUMENTS
 ### Phase 3: 슬라이드 구조 설계 → architecture-agent (슬라이드 수, 유형, 순서, 시간 배분)
 ### Phase 4: 기획안 작성 → writer-agent (슬라이드별 목적, 레이아웃, 핵심 콘텐츠)
 ### Phase 5: 품질 검토 → review-agent (정보 밀도, 시각 계층, 학습목표 정렬)
+
+## 산출물 (03_slide_plan/)
+
+```
+lectures/YYYY-MM-DD_{강의명}/03_slide_plan/
+├── input_data.json              # Phase 1: 교안 로드 + 도구/형식 선택
+├── brainstorm_result.md         # Phase 2: 브레인스토밍
+├── architecture.md              # Phase 3: 슬라이드 구조 설계
+├── slide_plan.md                # Phase 4: 최종 기획안 ★
+└── quality_review.md            # Phase 5: 품질 검토
+```

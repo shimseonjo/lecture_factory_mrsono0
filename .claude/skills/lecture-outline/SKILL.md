@@ -22,3 +22,16 @@ $ARGUMENTS
 ### Phase 5: 아키텍처 설계 → architecture-agent
 ### Phase 6: 구성안 작성 → writer-agent
 ### Phase 7: 품질 검토 → review-agent
+
+## 산출물 (01_outline/)
+
+```
+lectures/YYYY-MM-DD_{강의명}/01_outline/
+├── input_data.json              # Phase 1: 사용자 입력 (Q1~Q12)
+├── research_exploration.md      # Phase 2: 탐색적 리서치
+├── brainstorm_result.md         # Phase 3: 브레인스토밍
+├── research_deep.md             # Phase 4: 심화 리서치
+├── architecture.md              # Phase 5: 아키텍처 설계
+├── lecture_outline.md           # Phase 6: 최종 구성안 ★
+└── quality_review.md            # Phase 7: 품질 검토
+```

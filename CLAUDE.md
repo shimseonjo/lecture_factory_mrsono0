@@ -1,6 +1,6 @@
 # CLAUDE.md - Lectuer Factory Project
 
-Lecture Factory agent team의 운영 규칙과 워크플로우 정의. 상세 사용법은 `.claude/Lecture_Creation_Guide.md` 참조.
+Lecture Factory agent team의 운영 규칙과 워크플로우 정의. 워크플로우 시스템 규칙은 `.claude/CLAUDE.md` 참조.
 
 ## Language Rule (MANDATORY)
 
