@@ -135,6 +135,31 @@ uv pip install -r requirements.txt
 uv pip uninstall <package>
 ```
 
+## Skill Install Rule (MANDATORY)
+
+**외부 스킬 설치 시 반드시 `--copy` 옵션을 사용한다. 심볼릭 링크 금지.**
+
+`npx skills add` 명령은 기본적으로 `.agents/skills/`에 원본을 두고 `.claude/skills/`에 심볼릭 링크를 생성한다.
+이 프로젝트에서는 **`--copy` 옵션**으로 `.claude/skills/` 하위에 실제 파일을 직접 복사하여 설치한다.
+
+```bash
+# 올바른 설치 (--copy 필수)
+npx skills add <source> --copy -y
+
+# 금지: 심볼릭 링크 설치 (--copy 없음)
+npx skills add <source> -y
+```
+
+### 설치 후 정리
+
+`npx skills add --copy`는 `.agent/`, `.agents/`, `.continue/`, `.kiro/`, `.windsurf/` 등 외부 에이전트 폴더도 자동 생성한다. 이 폴더들은 `.gitignore`에 등록되어 있으므로 커밋되지 않지만, 불필요 시 삭제해도 무방하다.
+
+### 금지 패턴
+
+- `--copy` 없이 스킬 설치 (심볼릭 링크 생성됨)
+- `.claude/skills/` 외부 경로에 스킬을 수동 배치
+- 심볼릭 링크로 스킬 연결
+
 ## Git Branching Rule (MANDATORY)
 
 `.claude/` 파일 수정 시 필수 적용.
