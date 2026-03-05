@@ -1,0 +1,6 @@
+# npx skills add 시 자동 생성되는 외부 에이전트 폴더 (불필요)
+.agent/
+.agents/
+.continue/
+.kiro/
+.windsurf/
