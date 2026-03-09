@@ -70,14 +70,28 @@ $ARGUMENTS
 
 ### Phase 7: 품질 검토 → review-agent
 
-**지시**: 최종 구성안의 품질을 QM Rubric 기반 체크리스트로 검증하고, 원본 입력 대비 정확성을 추적하여 판정하세요.
+**지시**: 최종 구성안의 품질을 QM Rubric 기반 체크리스트(32개 항목)로 검증하고, 원본 입력 대비 정확성을 추적하여 판정하세요.
 **입력 파일**: `{output_dir}/lecture_outline.md`, `{output_dir}/architecture.md`, `{output_dir}/brainstorm_result.md`, `{output_dir}/research_deep.md`, `{output_dir}/input_data.json`
-**산출물 위치**: `{output_dir}/quality_review.md`
+**산출물 위치**: `{output_dir}/quality_review.md` (중간: `_review_step1~4.md`)
 **제약**: 도구 Read, Write만 사용. Agent 중첩 금지.
 **판정**: PASS (Major 0 + Minor ≤ 3) / CONDITIONAL PASS (Major 0 + Minor ≥ 4) / REVISION REQUIRED (Major ≥ 1)
-**검증 영역**: 구조 완전성 → 학습목표 명확성(25%) → 목표-활동-평가 정렬(25%) → 콘텐츠 구조/흐름(15%) → 시간 배분(15%) → 콘텐츠 정확성(20%)
-**워크플로우**: Step 0(입력 로드) → Step 1(구조 검증) → Step 2(정렬 검증) → Step 3(시간 검증) → Step 4(콘텐츠 정확성) → Step 5(판정+산출물)
+**검증 영역**: 구조 완전성(S-1~S-6) → 학습목표 명확성 25%(L-1~L-5) → 목표-활동-평가 정렬 25%(A-1~A-5) → 콘텐츠 구조/흐름 15%(F-1~F-4) → 시간 배분 15%(T-1~T-7) → 콘텐츠 정확성 20%(C-1~C-9)
+**워크플로우**: Step 0(입력 로드) → Step 1(구조 검증→Write) → Step 2(정렬 검증→Write) → Step 3(시간 검증→Write) → Step 4(콘텐츠 정확성→Write) → Step 5(Read 통합→판정+산출물)
 **상세**: `.claude/agents/review-agent/AGENT.md`의 "강의구성안 품질 검토 (Phase 7)" 섹션 참조
+
+#### Phase 7 후속 처리
+
+판정 결과에 따라 오케스트레이터가 분기 처리한다:
+
+- **PASS**: Phase 7 종료. 사용자에게 검토 요약(Pass/Fail 통계 + 우수 사항)을 보고한다.
+- **CONDITIONAL PASS**: Minor 위반 목록과 수정 우선순위를 사용자에게 제시한다.
+  AskUserQuestion으로 "수정 진행 / 현재 상태로 확정" 여부를 확인한다.
+  - 수정 선택 시 → quality_review.md의 Minor 위반 목록 + 수정 권고를 writer-agent에 전달하여 부분 수정 후 Phase 7 재실행 (최대 1회)
+  - 확정 선택 시 → 현재 lecture_outline.md를 최종본으로 확정
+- **REVISION REQUIRED**: Major 위반 목록 + 수정 가이드 + 수정 우선순위를 사용자에게 제시한다.
+  AskUserQuestion으로 "재작성 진행 / 중단" 여부를 확인한다.
+  - 재작성 선택 시 → quality_review.md의 Major 위반 수정 가이드를 writer-agent에 전달하여 해당 섹션 재작성 후 Phase 7 재실행 (최대 1회)
+  - 중단 선택 시 → 현재 상태로 보존, quality_review.md에 위반 목록 함께 기록
 
 ## 산출물 (01_outline/)
 
@@ -100,5 +114,9 @@ lectures/YYYY-MM-DD_{강의명}/01_outline/
 ├── research_deep.md             # Phase 4: 심화 리서치 최종 ★
 ├── architecture.md              # Phase 5: 아키텍처 설계
 ├── lecture_outline.md           # Phase 6: 최종 구성안 ★
-└── quality_review.md            # Phase 7: 품질 검토
+├── _review_step1.md             # Phase 7: 구조 완전성 검증 (중간)
+├── _review_step2.md             # Phase 7: 교수설계 정렬 검증 (중간)
+├── _review_step3.md             # Phase 7: 시간 배분 검증 (중간)
+├── _review_step4.md             # Phase 7: 콘텐츠 정확성 검증 (중간)
+└── quality_review.md            # Phase 7: 품질 검토 ★
 ```
