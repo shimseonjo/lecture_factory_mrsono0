@@ -101,15 +101,16 @@ Step 0: 입력 로드 + 리서치 계획 수립
 | 확장자 | 읽기 방법 | 비고 |
 |--------|----------|------|
 | `.md` `.txt` | Read 도구 직접 읽기 | |
-| `.pdf` (≤20p) | `Read(pages="1-20")` | Read 도구 내장 PDF 지원 |
-| `.pdf` (>20p) | `Bash: pdftotext {file} -` | pdftotext 설치됨 (poppler) |
-| `.pptx` | `Bash: python3 -c "..."` (아래 스크립트) | python-pptx v1.0.2 설치됨 |
-| `.docx` | `Bash: pandoc {file} -t plain` | pandoc v2.12 설치됨 |
+| `.pdf` (≤20p) | `Read(pages="1-20")` | Read 도구 내장 PDF 지원 (1순위) |
+| `.pdf` (>20p) | `Bash: /opt/homebrew/bin/pdftotext "{file}" -` | poppler 26.03 설치됨 |
+| `.pdf` (Read 실패 시) | `Bash: source .venv/bin/activate && python -c "import pdfplumber; ..."` | pdfplumber 0.11.9 설치됨 |
+| `.pptx` | `Bash: source .venv/bin/activate && python -c "..."` (아래 스크립트) | python-pptx 설치 시 |
+| `.docx` | `Bash: pandoc {file} -t plain` | pandoc 설치 시 |
 
 #### PPTX 읽기 인라인 스크립트
 
 ```bash
-python3 -c "
+source .venv/bin/activate && python -c "
 from pptx import Presentation; import sys
 prs = Presentation(sys.argv[1])
 for i, slide in enumerate(prs.slides, 1):
@@ -118,6 +119,21 @@ for i, slide in enumerate(prs.slides, 1):
     print(f'## 슬라이드 {i}: {title}')
     if body.strip(): print(body[:500])
     print()
+" "{파일경로}"
+```
+
+#### PDF 읽기 인라인 스크립트 (pdfplumber 폴백)
+
+```bash
+source .venv/bin/activate && python -c "
+import pdfplumber, sys
+pdf = pdfplumber.open(sys.argv[1])
+for i, page in enumerate(pdf.pages, 1):
+    text = page.extract_text()
+    if text:
+        print(f'--- Page {i} ---')
+        print(text)
+pdf.close()
 " "{파일경로}"
 ```
 
@@ -522,7 +538,10 @@ Step 0: 입력 변환 + 심화 리서치 계획 수립
 
 동작:
 1. `deep_research_plan.md`의 요청별 심화 질문으로 로컬 파일 탐색
-2. Phase 2 Step 1과 동일한 확장자별 읽기 전략 적용 (위 참조)
+2. Phase 2 Step 1과 동일한 확장자별 읽기 전략 적용 (위 참조):
+   - PDF ≤20p: `Read(pages="1-20")` (1순위)
+   - PDF >20p: `/opt/homebrew/bin/pdftotext "{file}" -` (2순위)
+   - PDF Read 실패 시: `source .venv/bin/activate && python -c "import pdfplumber; ..."` (폴백)
 3. 요청과 관련된 내용 발견 시 인용 번호 부여 + 발견 내용 기록
 4. 관련 내용 미발견 시 "로컬 자료에서 해당 정보 없음" 명시
 
