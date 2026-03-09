@@ -48,6 +48,14 @@ $ARGUMENTS
 **워크플로우**: Step 0(입력 변환+3자료원 계획) → Step 1(deep-research 8단계: 3자료원 필수 수집+교차검증) → Step 2(출력 정규화+통합)
 **상세**: `.claude/agents/research-agent/AGENT.md`의 "강의구성안 심화 리서치" 섹션 참조
 ### Phase 5: 아키텍처 설계 → architecture-agent
+
+**지시**: Backward Design 3단계를 역순 적용하여 강의 아키텍처를 설계하세요. (학습결과 → 평가 → 학습경험)
+**입력 파일**: `{output_dir}/brainstorm_result.md`, `{output_dir}/research_deep.md`, `{output_dir}/input_data.json`
+**산출물 위치**: `{output_dir}/architecture.md`
+**설계 방법론**: Backward Design (Wiggins & McTighe) + Constructive Alignment (Biggs) + Cognitive Load Theory
+**제약**: 도구 Read, Write만 사용. 외부 검색 없음. Agent 중첩 금지.
+**워크플로우**: Step 0(입력 로드+시간 예산) → Step 1(학습 결과 정의) → Step 2(평가 체계 설계) → Step 3(차시 구조 설계) → Step 4(정렬 맵) → Step 5(통합)
+**상세**: `.claude/agents/architecture-agent/AGENT.md`의 "강의구성안 아키텍처 설계 (Phase 5)" 섹션 참조
 ### Phase 6: 구성안 작성 → writer-agent
 ### Phase 7: 품질 검토 → review-agent
 
