@@ -168,7 +168,7 @@ Phase 5(아키텍처 설계)에서 일별 시간표를 자동 생성하여 Phase
 | 1 | 입력 수집 | input-agent | 구성안 3파일 로드 + S0~S6 자동 추론/확인 (AskUserQuestion 1회) → input_data.json |
 | 2 | 탐색적 리서치 | research-agent | 5자료원 통합(구성안+로컬+NBLM+웹) → 5개 주제 축(교수법/활동/사례/오개념/발문) 탐색, 고착 효과 방지 필터 |
 | 3 | 브레인스토밍 | brainstorm-agent | 4가지 발산 기법(HMW/SCAMPER/학제간융합/강제제약) → 발문(Bloom's×Socratic), 학습활동(GRR), 사례·훅, 설명 전략, Gagne 9사태, 오개념 해소 |
-| 4 | 심화 리서치 | research-agent | 브레인스토밍 기반 예시 자료, 보충 콘텐츠, 참고 문헌 |
+| 4 | 심화 리서치 | research-agent | 브레인스토밍 기반 교수법 효과성 검증(효과 크기+맥락 전이+SLO 측정), 활동 보충(루브릭/발문/템플릿), 사실 확인 |
 | 5 | 교안 구조 설계 | architecture-agent | 교수 모델별 도입-전개-정리 비율, Gagne 9사태 적용, SLO별 형성평가 배정, 시간 배분 |
 | 6 | 교안 작성 | writer-agent | full_script(L5) 완전 스크립트 — 교안(학습 내용) + 강사대본(발화문) + 발문 + 활동 + 평가문항 |
 | 7 | 품질 검토 | review-agent | 목표-활동-평가 정렬, Gagne 9사태 체크리스트, 시간 배분 현실성, 용어/톤 일관성 |
@@ -341,6 +341,12 @@ PBL:        도입 10% / 전개 75% / 정리 15%  (GRR: You Do Together 중심)
 2. 확보된 소재 → writer-agent(Phase 6)용 — 루브릭/발문/활동 템플릿/훅 소재
 3. 미해결 항목 → 강사 확인 필요
 
+**Step 0: 입력 변환** (교안 특화):
+1. `brainstorm_result.md` §1(발문), §2(활동), §5(Gagne) — 검증의 참조 기준선으로 로드
+2. `brainstorm_result.md` §7 — 구체적 요청사항 (사례검증/활동보충/사실확인, `관련 차시/SLO` 컬럼)
+3. `input_data.json` → `script_config.teaching_model`, `instructional_model_map`, `formative_assessment`
+4. 구성안 파일(`lecture_outline.md`, `architecture.md`) — 차시별 SLO, 시간 배분 참조 (변경 불가 기준)
+
 **제약**: 웹 25회, NBLM 5회, 삼각검증 추가 5회 이내
 
 상세 워크플로우: `.claude/agents/research-agent/AGENT.md` "강의교안 심화 리서치 (Phase 4) 세부 워크플로우" 섹션 참조
@@ -478,6 +484,8 @@ lectures/
 | **HMW (How Might We)** | 교안 브레인스토밍 | SLO를 HMW 질문으로 변환하여 배달 형태에 갇히지 않는 학습 문제 중심 발상 |
 | **QM Rubric** | 품질 검토 | 8개 일반 기준, 목표-활동-평가 정렬 |
 | **2-Pass Research** | 구성안, 교안 | 탐색적 리서치(문제 공간) → 브레인스토밍 → 심화 리서치(아이디어 검증) |
+| **deep-research 8단계** | 구성안 Phase 4, 교안 Phase 4 | Scope→Plan→Retrieve→Triangulate→Synthesize→Critique→Refine→Package (브레인스토밍 결과 심화 검증) |
+| **교수법 효과성 3중 검증** | 교안 Phase 4 | 효과 크기(d≥0.4) + 맥락 전이({target_learner} 적용 가능) + SLO 측정 타당성 |
 | **Assertion-Evidence** | 슬라이드 | 주장 제목 + 시각 증거 (불릿포인트 대체) |
 
 ---
@@ -503,6 +511,16 @@ lectures/
 - ScienceDirect 2025 (SCAMPER+PBL 창의성 4지표 유의미 향상)
 - NIU CITL (강제 제약 기법 — 핵심 아이디어 촉발)
 - Paul & Elder, Foundation for Critical Thinking (소크라테스식 발문 6유형)
+
+### 교수법 효과성 검증 · 교수설계 이론 근거
+- Gagne, R.M. et al. (2005). Principles of Instructional Design, 5th ed. (9가지 수업사태 원전)
+- Keller, J.M. & Suzuki, K. (2008). ARCS Model of Motivation (동기 설계)
+- Switzer, J. (2023). Direct Instruction Meta-Analysis, ERIC Database (직접교수법 효과 크기)
+- Dochy, F. et al. (2015). PBL Effectiveness Meta-Analysis, CBE Life Sciences Education
+- Bergmann, J. & Sams, A. (2012). Flip Your Classroom (플립러닝 연구 종합)
+- Perkins, D.N. & Salomon, G. (2012). Knowledge to Go: Transfer of Learning (맥락 전이 이론)
+- Black, P. & Wiliam, D. (2009). Formative Assessment Impact Meta-Analysis, Review of Educational Research
+- Heritage, M. (2007). Formative Assessment: What Do Teachers Need to Know and Do?
 
 ### 강의 · 교안 설계
 - Carnegie Mellon Eberly Center (강의계획서 설계)
