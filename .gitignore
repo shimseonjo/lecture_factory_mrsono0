@@ -4,3 +4,8 @@
 .continue/
 .kiro/
 .windsurf/
+.venv/
+temp/
+lectures/
+참고자료/
+settings.local.json
