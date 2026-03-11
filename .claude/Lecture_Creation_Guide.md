@@ -171,9 +171,7 @@ Phase 5(아키텍처 설계)에서 일별 시간표를 자동 생성하여 Phase
 | 4 | 심화 리서치 | research-agent | 브레인스토밍 기반 교수법 효과성 검증(효과 크기+맥락 전이+SLO 측정), 활동 보충(루브릭/발문/템플릿), 사실 확인 |
 | 5 | 교안 구조 설계 | architecture-agent | 교수 모델별 도입-전개-정리 비율, Gagne 9사태 적용, SLO별 형성평가 배정, 시간 배분 |
 | 6 | 교안 작성 | writer-agent | full_script(L5) 완전 스크립트 — 교안(학습 내용) + 강사대본(발화문) + 발문 + 활동 + 평가문항 |
-| 7 | 품질 검토 | review-agent | 목표-활동-평가 정렬, Gagne 9사태 체크리스트, 시간 배분 현실성, 용어/톤 일관성 |
-
-> **구현 상태**: Phase 1~6 설계·구현 완료. Phase 7 추후 구현 예정.
+| 7 | 품질 검토 | review-agent | 6영역 45항목 검증: 구조 완전성(S), 교수설계 프레임워크(G: Gagne/GRR/2-레이어/Think-Aloud), 발문·평가·흐름(P: Bloom's/CMU 3점/전환), 시간 배분(T), 콘텐츠 정확성(C: Anti-Hallucination), 교안 실행 품질(N: 발화문/활동/강사가이드) |
 
 **적용 프레임워크**:
 - Madeline Hunter 6단계 (직접교수법)
@@ -423,6 +421,67 @@ Phase 1~5 산출물을 통합하여 초보 강사가 교안+대본만 보고 강
 **산출물 구조**: §1~§3 개요·목표·공통구조 + §4 차시별 교안(75~80%) + §5~§6 형성평가·발문 집계 + §7~§8 참고자료·강사가이드
 
 상세 워크플로우: `.claude/agents/writer-agent/AGENT.md` "강의교안 작성 (Phase 6) 세부 워크플로우" 섹션 참조
+
+#### Phase 7: 품질 검토 — 6영역 45항목 검증
+
+Phase 1~6 산출물(`lecture_script.md`)이 교수설계 프레임워크와 입력 기준에 부합하는지 체계적으로 검증합니다.
+
+**구성안 Phase 7 vs 교안 Phase 7 핵심 차이**:
+
+| 차원 | 구성안 Phase 7 | 교안 Phase 7 |
+|------|--------------|-------------|
+| 검증 대상 | `lecture_outline.md` (설계 문서) | `lecture_script.md` (실행 문서 — 발화문+행동지시) |
+| 검증 항목 수 | 36개 (6영역) | 45개 (6영역) |
+| 고유 검증 영역 | 없음 | Gagne 9사태, GRR, 2-레이어, Think-Aloud, 발화문 자연성 |
+| Step 수 | Step 0~5 (6단계) | Step 0~7 (8단계) |
+
+**Step 0~7 워크플로우**:
+
+```
+Step 0: 입력 로드 (7개 파일)
+  │     lecture_script.md + 02_script/(architecture, brainstorm, research_deep, input_data.json)
+  │     + 01_outline/(lecture_outline.md, architecture.md)
+  │
+  ├── Step 1: 구조 완전성 (S-1~S-7, 7항목) → _review_step1.md
+  │     §1~§8 헤딩, 필수 테이블, 플레이스홀더, 표기법 정의, 서브섹션, 차시 커버리지
+  │
+  ├── Step 2: 교수설계 프레임워크 (G-1~G-8, 8항목) → _review_step2.md ★교안 고유
+  │     Gagne 9사태 커버리지(≥7/9), GRR 순차성, 2-레이어 표기 일관성, Think-Aloud 4패턴(≥3/4), 15분 분절
+  │
+  ├── Step 3: 발문·평가·흐름 (P-1~P-7, 7항목) → _review_step3.md
+  │     Bloom's 점진 상승, SLO-발문 정합, CMU 3점 배치(Exit 필수), 차시 간 전환
+  │
+  ├── Step 4: 시간 배분 현실성 (T-1~T-8, 8항목) → _review_step4.md
+  │     교시 시간 합산, 도입:전개:정리 비율, GRR 시간 비율, 시간큐 연속성
+  │
+  ├── Step 5: 콘텐츠 정확성 — Anti-Hallucination (C-1~C-8, 8항목) → _review_step5.md
+  │     CLO/SLO 원본 일치, 차시 배치, Gagne/GRR 배정, 발문·활동·오개념 근거 대조
+  │
+  ├── Step 6: 교안 실행 품질 (N-1~N-7, 7항목) → _review_step6.md ★교안 고유
+  │     발화문 자연성(구어체 3~5문장), 활동 지시 3요소, §5-§6 집계 정합, 강사 가이드, 표기법 일관 사용
+  │
+  └── Step 7: 통합 판정 → quality_review.md ★
+```
+
+**6개 검증 영역**:
+
+| 영역 | ID 범위 | 항목 수 | 주요 검증 기준 |
+|------|---------|--------|--------------|
+| S: 구조 완전성 | S-1~S-7 | 7 | §1~§8 존재, 필수 테이블, 22개 서브섹션, 차시 커버리지 |
+| G: 교수설계 프레임워크 | G-1~G-8 | 8 | Gagne ≥7/9, GRR 순차, 2-레이어 분리, Think-Aloud ≥3/4, 15분 분절 |
+| P: 발문·평가·흐름 | P-1~P-7 | 7 | Bloom's 점진 상승, CMU 3점(Exit 필수), SLO-발문 정합, 차시 간 전환 |
+| T: 시간 배분 | T-1~T-8 | 8 | 교시 합산, time_ratio ±5%, GRR 비율, 시간큐 연속성 |
+| C: 콘텐츠 정확성 | C-1~C-8 | 8 | CLO/SLO 원본 대조, 차시 배치, 발문·활동·오개념 근거 |
+| N: 교안 실행 품질 | N-1~N-7 | 7 | 발화문 자연성, 활동 3요소, 집계 정합, 강사 가이드, 표기법 |
+
+**판정 기준** (3단계):
+- **PASS**: Major 0개 + Minor ≤ 3
+- **CONDITIONAL PASS**: Major 0개 + Minor ≥ 4
+- **REVISION REQUIRED**: Major ≥ 1
+
+**산출물**: `02_script/quality_review.md` (§1 검토 요약 → §2 검증 상세 45항목 → §3 Major → §4 Minor → §5 우수 → §6 수정 우선순위 → §7 최종 판정)
+
+상세 워크플로우: `.claude/agents/review-agent/AGENT.md` "강의교안 품질 검토 (Phase 7) 세부 워크플로우" 섹션 참조
 
 **데이터 흐름**:
 ```

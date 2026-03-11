@@ -305,9 +305,59 @@ prompt: |
 2. Read → §4에서 모든 Day 존재 확인
 3. Gagne 체크 값이 모든 차시에서 7/9 이상 확인
 
-### Phase 7: 품질 검토 → review-agent (목표-활동-평가 정렬, 시간 배분)
+### Phase 7: 품질 검토 → review-agent (Gagne/GRR/발문/시간/정확성/실행품질)
 
-<!-- TODO: Phase 7 프롬프트 구현 예정 -->
+**사전 처리** (오케스트레이터 수행):
+
+1. `{output_dir}/lecture_script.md` 존재 확인 (Phase 6 산출물)
+2. `{output_dir}/input_data.json` Read → `source_outline.outline_path`, `source_outline.architecture_path` 추출
+
+**Agent 호출**:
+
+```
+subagent_type: review-agent
+prompt: |
+  lecture_script.md의 품질을 검토하세요.
+
+  **지시사항**: `.claude/agents/review-agent/AGENT.md`를 읽고
+  "강의교안 품질 검토 (Phase 7) 세부 워크플로우" 섹션의 Step 0~7을 실행하세요.
+
+  **검증 대상**: `{output_dir}/lecture_script.md`
+
+  **검증 기준 (교안)**:
+  - `{output_dir}/architecture.md` (Gagne/GRR/발문/전환 설계 기준)
+  - `{output_dir}/brainstorm_result.md` (발문/활동/사례/오개념 원본)
+  - `{output_dir}/research_deep.md` (확보된 소재, 미해결 항목)
+  - `{output_dir}/input_data.json` (교수 모델, 시간 비율, 설정값)
+
+  **검증 기준 (구성안)**:
+  - `{source_outline.outline_path}` (CLO/SLO 원본)
+  - `{source_outline.architecture_path}` (정렬 맵, 평가, 시간 예산 원본)
+
+  **산출물 위치**: `{output_dir}/`
+  **중간 산출물**: `_review_step1.md` ~ `_review_step6.md` (점진적 Write)
+  **최종 산출물**: `quality_review.md`
+
+  **검증 영역 (45개 항목)**:
+  1. 구조 완전성 (S-1~S-7): §1~§8 구조, 표기법, 서브섹션, 차시 커버리지
+  2. 교수설계 프레임워크 (G-1~G-8): Gagne 9사태, GRR 4단계, 2-레이어, Think-Aloud, 15분 분절
+  3. 발문/평가/흐름 (P-1~P-7): Bloom's 발문 수준, CMU 3점, 차시 간 전환
+  4. 시간 배분 (T-1~T-8): 교시 시간 합산, 비율 준수, GRR 시간, 시간큐
+  5. 콘텐츠 정확성 (C-1~C-8): Anti-Hallucination, CLO/SLO 일치, 소재 근거
+  6. 교안 실행 품질 (N-1~N-7): 발화문 자연성, 활동 3요소, 집계 정합, 강사 가이드
+
+  **판정 기준**: PASS (Major=0, Minor≤3) / CONDITIONAL PASS (Major=0, Minor≥4) / REVISION REQUIRED (Major≥1)
+
+  **제약**: 도구 Read, Write만 사용. 외부 검색 없음. Agent 중첩 금지.
+```
+
+**완료 확인**:
+1. `{output_dir}/quality_review.md` 존재 확인 (Glob)
+2. Read → 판정 결과 추출 (PASS / CONDITIONAL PASS / REVISION REQUIRED)
+3. 판정에 따라 후속 조치 안내:
+   - **PASS**: "교안 품질 검토 통과. lecture_script.md가 확정되었습니다."
+   - **CONDITIONAL PASS**: "Minor 위반 {N}개 발견. quality_review.md §4, §6을 확인하여 부분 수정을 권고합니다."
+   - **REVISION REQUIRED**: "Major 위반 {N}개 발견. quality_review.md §3, §6의 수정 가이드에 따라 해당 교시/섹션을 재작성해야 합니다."
 
 ## 산출물 (02_script/)
 
