@@ -176,7 +176,60 @@ prompt: |
 
 ### Phase 5: 교안 구조 설계 → architecture-agent (도입-전개-정리, Gagne 9사태)
 
-<!-- TODO: Phase 5 프롬프트 구현 예정 -->
+**사전 처리** (오케스트레이터 수행):
+
+1. `{output_dir}/input_data.json` Read:
+   - `script_config.teaching_model` → 한글 변환: `direct_instruction`→"직접교수법", `pbl`→"PBL", `flipped`→"플립러닝", `mixed`→"혼합"
+   - `script_config.time_ratio` → intro, main, wrap 비율 추출
+   - `script_config.bloom_question_map` → 차시별 발문 수준 매핑 추출
+   - `script_config.formative_assessment` → 형성평가 계획 추출
+   - `script_config.instructional_model_map` → primary_model, grr_focus 추출
+   - `source_outline.outline_path`, `source_outline.architecture_path`, `source_outline.outline_input_path` 추출
+2. `{output_dir}/brainstorm_result.md` 존재 확인
+3. `{output_dir}/research_deep.md` 존재 확인
+4. **Context7 기술 문서 수집** (기술 교육인 경우):
+   - `input_data.json`의 `keywords[]` + `topic`에서 기술 키워드 추출
+   - 구성안 `architecture.md` §4-2의 하위 주제명에서 라이브러리/도구 이름 추출
+   - 추출된 각 라이브러리에 대해:
+     - `resolve-library-id`(라이브러리명)로 Context7 ID 조회
+     - 유효한 ID가 있으면 `get-library-docs`(library_id, topic=차시별_하위_주제)로 문서 수집
+   - 수집 결과를 `{output_dir}/context7_reference.md`에 저장 (라이브러리별 → API 목록, 코드 예제, 버전 정보, 관련 차시 태깅)
+   - keywords에 라이브러리가 없으면 이 단계 스킵
+   - Context7에 미등록 라이브러리는 WebSearch + WebFetch로 공식 문서 직접 수집 (핵심 3~5개)
+   - **제약**: 라이브러리 최대 5개, 라이브러리당 get-library-docs 최대 3회
+
+**Agent 호출**:
+
+```
+subagent_type: architecture-agent
+prompt: |
+  당신은 교안 구조 설계 에이전트입니다.
+  `.claude/agents/architecture-agent/AGENT.md`를 읽고 "강의교안 아키텍처 설계 (Phase 5) 세부 워크플로우" 섹션의 Step 0~4를 실행하세요.
+
+  **입력 파일**:
+  - input_data.json: `{output_dir}/input_data.json`
+  - brainstorm_result.md: `{output_dir}/brainstorm_result.md` (§1 발문, §2 활동, §3 사례, §4 설명 전략, §5 Gagne, §6 오개념)
+  - research_deep.md: `{output_dir}/research_deep.md` (확정된 전제, 확보된 소재, 미해결 항목)
+  - context7_reference.md: `{output_dir}/context7_reference.md` (존재 시 — 기술 문서/코드 예제)
+  - 스키마 참조: `.claude/templates/input-schema-script.json`
+
+  **구성안 참조** (변경 불가):
+  - architecture.md: `{source_outline.architecture_path}`
+  - lecture_outline.md: `{source_outline.outline_path}`
+  - input_data.json: `{source_outline.outline_input_path}`
+
+  **교수 모델**: {teaching_model_한글} ({script_config.teaching_model})
+  **시간 비율**: 도입 {time_ratio.intro}% / 전개 {time_ratio.main}% / 정리 {time_ratio.wrap}%
+  **산출물 위치**: `{output_dir}/`
+  **산출물 파일**: `architecture.md`
+
+  **제약**: 도구 Read, Write만 사용. Agent 중첩 금지.
+```
+
+**완료 확인** (3단계 검증):
+1. `{output_dir}/architecture.md` 존재 확인 (Glob)
+2. Read로 architecture.md 로드 → §8 검증 결과 섹션에서 6항목 모두 "Pass" 확인
+3. §3 차시별 내부 구조에서 Gagne 체크 값이 모든 차시에서 7/9 이상인지 확인
 
 ### Phase 6: 교안 작성 → writer-agent (섹션별 스크립트, 발문, 활동, 평가문항)
 

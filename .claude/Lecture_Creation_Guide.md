@@ -173,7 +173,7 @@ Phase 5(아키텍처 설계)에서 일별 시간표를 자동 생성하여 Phase
 | 6 | 교안 작성 | writer-agent | full_script(L5) 완전 스크립트 — 교안(학습 내용) + 강사대본(발화문) + 발문 + 활동 + 평가문항 |
 | 7 | 품질 검토 | review-agent | 목표-활동-평가 정렬, Gagne 9사태 체크리스트, 시간 배분 현실성, 용어/톤 일관성 |
 
-> **구현 상태**: Phase 1~4 설계·구현 완료. Phase 5~7 추후 구현 예정.
+> **구현 상태**: Phase 1~5 설계·구현 완료. Phase 6~7 추후 구현 예정.
 
 **적용 프레임워크**:
 - Madeline Hunter 6단계 (직접교수법)
@@ -351,11 +351,71 @@ PBL:        도입 10% / 전개 75% / 정리 15%  (GRR: You Do Together 중심)
 
 상세 워크플로우: `.claude/agents/research-agent/AGENT.md` "강의교안 심화 리서치 (Phase 4) 세부 워크플로우" 섹션 참조
 
+#### Phase 5: 교안 구조 설계 상세
+
+구성안 Phase 5가 "전체 과정 구조 설계"(Top-down: CLO/SLO/차시 배정)라면, 교안 Phase 5는 **"각 차시 내부 구조 설계"(Bottom-up: 확정된 차시 내부를 교수 모델별로 채움)**입니다.
+
+**구성안 Phase 5 vs 교안 Phase 5 핵심 차이**:
+
+| 차원 | 구성안 Phase 5 | 교안 Phase 5 |
+|------|--------------|-------------|
+| 설계 대상 | 전체 과정 구조 (CLO/SLO/차시 배정) | 각 차시 내부 구조 (도입-전개-정리) |
+| 설계 방향 | Top-down (학습 결과 → 차시) | Bottom-up (확정된 차시 내부를 채움) |
+| 불변 기준 | input_data.json의 learning_goals | 구성안 architecture.md 전체 |
+| 핵심 프레임워크 | Backward Design, Constructive Alignment | Gagne 9사태, GRR, Bloom's 발문, CMU 3점 모델 |
+| 교수 모델 분기 | 없음 | 있음 (직접교수법/PBL/플립러닝/혼합) |
+
+**Step 0~4 워크플로우**:
+
+```
+Step 0: 입력 로드 + 변경 불가 기준 확정
+  │     구성안 architecture.md(변경 불가) + brainstorm + research_deep + input_data.json + context7_reference
+  │
+  ├── Step 1: 차시별 교수 모델 확정 + 시간 비율 + GRR 배분
+  │     교수 모델별 도입/전개/정리 비율, Gagne 9사태 강조점, GRR 4단계 시간 배분
+  │
+  ├── Step 2: 차시 내부 구조 설계 (Gagne 9사태 × GRR × Bloom's)
+  │     도입부(사태1~3), 전개부(사태4~7 × GRR), 정리부(사태8~9) 세부 시간 블록
+  │
+  ├── Step 3: 형성평가 3점 배치 + 발문 수준 배정
+  │     CMU Eberly 3점(Entry-During-Exit) + SLO-평가 정합 + Bloom's×Socratic 교차
+  │
+  └── Step 4: 차시 간 전환 설계 + 검증(6항목) + 산출물 통합 → architecture.md
+```
+
+**Context7 기술 문서 통합** (오케스트레이터 사전 처리):
+- `input_data.json`의 keywords + 구성안 차시 하위 주제에서 라이브러리 자동 추출
+- Context7 MCP(`resolve-library-id` → `get-library-docs`)로 최신 문서/코드 예제 수집
+- `context7_reference.md`에 저장 → architecture-agent가 §3 차시별 내부 구조의 `기술 참조` 컬럼으로 배정
+- 기술 교육이 아닌 경우 자동 스킵
+
+**적용 프레임워크**:
+- Gagne 9사태 (U. Florida CITT, Utah State, NIU CITL)
+- GRR 4단계 (Fisher & Frey, DePaul University, ASCD)
+- CMU Eberly 3점 형성평가 배치 (CMU Eberly Center, Columbia CPET)
+- Bloom's × Socratic 발문 교차 매핑 (Paul & Elder)
+- 강의 분절 10~15분 규칙 (Michigan CRLT)
+
+**교수 모델별 시간 비율** (50분 기준):
+
+| 교수 모델 | 도입 | 전개 | 정리 | GRR 중심 |
+|-----------|------|------|------|---------|
+| 직접교수법 | 16% (8분) | 70% (35분) | 14% (7분) | I Do → We Do → You Do |
+| PBL | 20% (10분) | 70% (35분) | 10% (5분) | We Do Together 중심 |
+| 플립러닝 | 10% (5분) | 80% (40분) | 10% (5분) | We Do → You Do Together |
+
+**검증 체크리스트** (6항목): 시간 합산, Gagne 커버리지 ≥7/9, SLO 평가 100%, GRR 연속성, 강의 분절 ≤15분, time_ratio 준수
+
+**산출물**: `02_script/architecture.md` (§1~§9: 변경 불가 기준 요약, 교수 모델 설계, 차시별 내부 구조, 형성평가 배치, 발문 수준, 전환 설계, 기술 문서 참조, 검증 결과, 설계 결정 로그)
+
+상세 워크플로우: `.claude/agents/architecture-agent/AGENT.md` "강의교안 아키텍처 설계 (Phase 5) 세부 워크플로우" 섹션 참조
+
 **데이터 흐름**:
 ```
 구성안 3파일 로드 → input_data.json → research_exploration.md → brainstorm_result.md
-→ research_deep.md → architecture.md → lecture_script.md (교안+강사대본) → quality_review.md
+→ research_deep.md → [context7_reference.md] → architecture.md → lecture_script.md (교안+강사대본) → quality_review.md
 ```
+- `context7_reference.md`: Phase 5 오케스트레이터가 Context7 MCP로 사전 수집 (기술 교육 시에만 생성)
 
 **산출물**: `lectures/YYYY-MM-DD_{강의명}/02_script/lecture_script.md`
 
