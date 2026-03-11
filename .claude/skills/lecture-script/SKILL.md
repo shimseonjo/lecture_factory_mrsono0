@@ -46,16 +46,19 @@ $ARGUMENTS
 
 **핵심 원칙**:
 - Step 0: lectures/ 스캔 → 구성안 폴더 선택 → 3개 파일 로드
-- Step 1: AskUserQuestion 1회 (S0 작성범위 + S1a 교수모델 + S1b 활동전략)
-  - S1a/S1b는 architecture.md 분석으로 자동 추론 후 "(추천)" 표시
-- Step 2: S2~S6 자동 결정 (질문 없음)
+- Step 1: S0~S6 전체 자동 결정 (질문 없음)
+  - S0: 기본값 "전체 차시" (Day 목록 파싱)
+  - S1a: architecture.md 활동 유형 키워드 분석 → 교수 모델 자동 추론
+  - S1b: architecture.md 활동 유형 키워드 분석 → 활동 전략 자동 추론
   - S2: full_script 고정 (초보 강사가 교안+대본만 보고 강의 가능)
   - S3: architecture.md 형성평가 계획에서 자동 추출
   - S4: 교수 모델에서 시간 비율 자동 파생
   - S5: 구성안 참고자료 상속 + 인터넷 리서치 기본 활성화
   - S6: Bloom's 발문 자동 매핑 + Gagne 체크리스트 고정
-- Step 3: 자동 결정 요약 출력
-- Step 4: input_data.json 생성
+- Step 2: 전체 설정 요약 + AskUserQuestion **반드시 1회** (확인/변경)
+  - S0~S6 전체를 요약 출력 후 "이 설정으로 진행할까요?" 확인
+  - "변경 필요" 선택 시 해당 항목만 갱신 (예: "S0: Day 1만", "S1a: PBL")
+- Step 3: input_data.json 생성
 
 **폴더 생성**: 선택된 강의 루트 폴더 아래 `02_script/` 생성
 **산출물**: `02_script/input_data.json` — 스키마: `.claude/templates/input-schema-script.json`
@@ -260,6 +263,7 @@ prompt: |
   - {output_dir}/input_data.json
   - {output_dir}/context7_reference.md (존재 시)
 
+  **스키마 참조**: `.claude/templates/input-schema-script.json` (script_config 필드 의미·유효값 이해용)
   **템플릿**: `.claude/templates/script-template.md`
   **산출물**: `{output_dir}/lecture_script.md`
 
@@ -294,6 +298,7 @@ prompt: |
   - {output_dir}/input_data.json
   - {output_dir}/context7_reference.md (존재 시)
 
+  **스키마 참조**: `.claude/templates/input-schema-script.json` (script_config 필드 의미·유효값 이해용)
   **템플릿**: `.claude/templates/script-template.md`
   **산출물**: `{output_dir}/lecture_script.md`
 
@@ -333,6 +338,8 @@ prompt: |
   **검증 기준 (구성안)**:
   - `{source_outline.outline_path}` (CLO/SLO 원본)
   - `{source_outline.architecture_path}` (정렬 맵, 평가, 시간 예산 원본)
+
+  **스키마 참조**: `.claude/templates/input-schema-script.json` (script_config 필드 의미·유효값 이해용)
 
   **산출물 위치**: `{output_dir}/`
   **중간 산출물**: `_review_step1.md` ~ `_review_step6.md` (점진적 Write)

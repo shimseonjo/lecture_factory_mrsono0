@@ -735,7 +735,9 @@ Step 0: 입력 로드 + 변경 불가 기준 확정
 
 **동작**:
 
-1. **7개 파일 로드**:
+1. **스키마 사전 이해**: `.claude/templates/input-schema-script.json`을 읽고 script_config 각 필드의 enum 값, 의미, 필드 간 관계를 이해한다.
+
+2. **7개 파일 로드**:
 
 | # | 파일 | 역할 | 변경 가능 |
 |---|------|------|----------|
@@ -747,14 +749,14 @@ Step 0: 입력 로드 + 변경 불가 기준 확정
 | 6 | 구성안 `lecture_outline.md` | 강의 전체 구조 참조 | 참조용 |
 | 7 | 구성안 `input_data.json` | 원본 강의 입력 참조 | 참조용 |
 
-2. **구성안 architecture.md에서 추출**:
+3. **구성안 architecture.md에서 추출**:
    - §2-2: SLO 목록 (차시별 Bloom's 수준 포함)
    - §3-2: 형성평가 계획
    - §4-2: 차시별 상세 배치 (Day별 → 교시별 하위 주제, 활동 유형, SLO)
    - §4-2.5: 일별 시간표
    - §5-1: 종합 정렬 매트릭스
 
-3. **교안 input_data.json에서 추출**:
+4. **교안 input_data.json에서 추출**:
    - `script_config.teaching_model`: 교수 모델 (direct_instruction/pbl/flipped/mixed)
    - `script_config.mixed_model_map`: mixed일 때 Day별 모델
    - `script_config.time_ratio`: 도입:전개:정리 비율
@@ -764,7 +766,7 @@ Step 0: 입력 로드 + 변경 불가 기준 확정
    - `script_config.instructional_model_map`: 교수설계 모델 매핑
    - `source_outline.lecture_root`: 강의 루트 경로
 
-4. **차시 목록 구성**:
+5. **차시 목록 구성**:
    - `script_config.target_sessions == "all"`: 구성안 architecture.md의 전체 차시
    - `script_config.target_sessions == "selected"`: `selected_days`에 해당하는 Day만
 

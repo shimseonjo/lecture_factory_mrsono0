@@ -20,6 +20,10 @@
       "enum": ["direct_instruction", "pbl", "flipped", "mixed"],
       "description": "S1a: 교수 모델 — architecture.md 활동 유형 키워드 분석으로 자동 결정"
     },
+    "teaching_model_reasoning": {
+      "type": "string",
+      "description": "S1a: 교수 모델 자동 추론의 근거 설명 (예: 'architecture.md §4-2 키워드 분석 — direct_instruction 85.7%')"
+    },
     "mixed_model_map": {
       "type": "object",
       "default": {},
@@ -32,6 +36,10 @@
         "enum": ["individual_practice", "group_activity", "discussion", "project"]
       },
       "description": "S1b: 활동 전략 목록 — architecture.md 활동 유형 키워드 분석으로 자동 결정"
+    },
+    "activity_strategies_reasoning": {
+      "type": "string",
+      "description": "S1b: 활동 전략 자동 추론의 근거 설명"
     },
     "script_detail_level": {
       "type": "string",

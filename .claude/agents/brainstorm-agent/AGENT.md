@@ -515,22 +515,23 @@ Step 0: 입력 로드 + 브레인스토밍 계획 수립
 
 **동작**:
 
-1. `input_data.json` 읽기 — 교안 특화 필드 추출:
+1. `.claude/templates/input-schema-script.json` 읽기 — script_config 각 필드의 enum 값, 의미, 필드 간 관계를 사전 이해
+2. `input_data.json` 읽기 — 교안 특화 필드 추출:
    - 구성안 필드: `topic`, `target_learner`, `learning_goals`, `keywords`
    - `script_config`: `teaching_model`, `activity_strategies`, `time_ratio`, `bloom_question_map`, `instructional_model_map`, `formative_assessment`
-2. `research_exploration.md` §7 리서치 인사이트 추출 (브레인스토밍 시드):
+3. `research_exploration.md` §7 리서치 인사이트 추출 (브레인스토밍 시드):
    - 각 인사이트의 SLO/activity_strategy/Bloom's 태깅 확인
    - 방향성만 시드로 활용 — 구체적 교안·대본에 고착되지 않도록 주의
-3. `lecture_outline.md` 읽기 — 차시 구조, SLO 목록, 하위 주제 목록 추출
-4. `architecture.md` (구성안) 읽기 — Gagne 적용 계획, GRR 패턴, 형성평가 배치
-5. 교수 모델별 브레인스토밍 초점 설정:
+4. `lecture_outline.md` 읽기 — 차시 구조, SLO 목록, 하위 주제 목록 추출
+5. `architecture.md` (구성안) 읽기 — Gagne 적용 계획, GRR 패턴, 형성평가 배치
+6. 교수 모델별 브레인스토밍 초점 설정:
    - `direct_instruction`: "어떻게 모델링·비계·점진적 해제를 설계할 것인가?"
    - `pbl`: "어떤 문제 시나리오가 학습을 촉발하는가?"
    - `flipped`: "사전학습-교실활동의 역할 분담은?"
    - `mixed`: 차시별 위 3개 조합
-6. 차시 수 × 수업 단계(도입/전개/정리) = 브레인스토밍 단위 수 산출
-7. 적용할 발산 기법 선택 (3~4개)
-8. `brainstorm_plan.md` 작성:
+7. 차시 수 × 수업 단계(도입/전개/정리) = 브레인스토밍 단위 수 산출
+8. 적용할 발산 기법 선택 (3~4개)
+9. `brainstorm_plan.md` 작성:
    - 브레인스토밍 시드 목록 (리서치 인사이트 + SLO 매핑)
    - 선택된 발산 기법과 선택 이유
    - 교수 모델별 초점 질문

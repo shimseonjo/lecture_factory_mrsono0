@@ -494,6 +494,8 @@ Step 0: 입력 로드 + 검증 (GAIDE Setup)
 
 **동작**:
 
+0. `.claude/templates/input-schema-script.json` 읽기 — script_config 각 필드의 enum 값, 의미, 필드 간 관계를 사전 이해
+
 1. 5개 파일을 순서대로 Read:
 
 | 파일 | 핵심 소비 섹션 | 역할 |
@@ -501,13 +503,13 @@ Step 0: 입력 로드 + 검증 (GAIDE Setup)
 | `architecture.md` | §2(교수모델), §3(차시내부구조 ★), §4(형성평가), §5(발문수준), §6(전환설계) | 시간 블록·GRR·Gagne의 골격 |
 | `brainstorm_result.md` | §1(발문), §2(활동), §3(사례·훅), §4(설명전략), §5(Gagne구현), §6(오개념) | 콘텐츠 소재 |
 | `research_deep.md` | §3-2(확보된소재 — 차시×SLO×GRR 매핑) | 검증된 외부 소재 |
-| `input_data.json` | `script_config` (teaching_model, time_ratio, bloom_question_map, tone_examples) | 설정값 |
+| `input_data.json` | `script_config` (teaching_model, time_ratio, bloom_question_map, formative_assessment, instructional_model_map, activity_strategies, tone_examples) | 설정값 |
 | `context7_reference.md` | 라이브러리별 API/문서/코드 예제 (존재 시) | 기술 교육용 참조 |
 
-2. 템플릿 로드:
+3. 템플릿 로드:
    - `.claude/templates/script-template.md` Read
 
-3. 데이터 무결성 검증:
+4. 데이터 무결성 검증:
    - architecture.md §3의 차시 수 = input_data.json의 schedule에서 계산한 총 교시 수
    - architecture.md §8 검증 결과에서 6항목 모두 Pass 확인
    - brainstorm_result.md §1~§6 각 섹션 존재 확인

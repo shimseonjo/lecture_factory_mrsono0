@@ -470,13 +470,14 @@ Step 0: 입력 로드
 
 **동작**:
 
+0. `.claude/templates/input-schema-script.json` 읽기 — script_config 각 필드의 enum 값, 유효 범위를 사전 이해 (검증 기준 해석에 필요)
 1. `lecture_script.md` Read — 검증 대상
 2. 교안 검증 기준 4개 파일 Read:
    - `{output_dir}/architecture.md`: 차시 내부 구조(Gagne/GRR/시간 블록), 형성평가 배치, 발문 수준 배정, 전환 설계
    - `{output_dir}/brainstorm_result.md`: 발문 텍스트, 활동 아이디어, 사례/훅, Gagne 구현 방안, 오개념
    - `{output_dir}/research_deep.md`: 확정된 전제, 확보된 소재, 미해결 항목
    - `{output_dir}/input_data.json`: teaching_model, time_ratio, bloom_question_map, formative_assessment
-3. 구성안 검증 기준 2개 파일 Read:
+4. 구성안 검증 기준 2개 파일 Read:
    - `{outline_dir}/lecture_outline.md`: CLO/SLO 원본, 차시 배치 원본
    - `{outline_dir}/architecture.md`: 정렬 맵 원본, 평가 체계 원본, 시간 예산 원본
 
