@@ -71,9 +71,35 @@ $ARGUMENTS
 
 ---
 
-### Phase 2: 탐색적 리서치 → research-agent (교수법 사례, 유사 교안 벤치마킹)
+### Phase 2: 탐색적 리서치
 
-<!-- TODO: Phase 2 프롬프트 구현 예정 -->
+**사전 처리** (오케스트레이터 수행):
+
+1. `{output_dir}/input_data.json`을 Read하여 `script_config.teaching_model`과 `script_config.reference_sources`, `script_config.activity_strategies` 추출
+2. `teaching_model` 값을 한글 변환: `direct_instruction`→"직접교수법", `pbl`→"PBL", `flipped`→"플립러닝", `mixed`→"혼합"
+3. `script_config.activity_strategies`를 한글 변환: `individual_practice`→"개인 실습", `group_activity`→"그룹 활동", `discussion`→"토론·발문", `project`→"프로젝트"
+
+**Agent 호출**:
+
+```
+- subagent_type: research-agent
+- prompt:
+
+강의교안을 위한 탐색적 리서치를 수행하세요.
+
+**지시사항**: `.claude/agents/research-agent/AGENT.md`를 읽고 "강의교안 탐색적 리서치 (Phase 2) 세부 워크플로우" 섹션을 따르세요.
+
+**스키마 참조**: `.claude/templates/input-schema-script.json` (필드 의미·유효값·관계 이해용)
+**입력**: `{output_dir}/input_data.json`
+**구성안 참조**: `{source_outline.outline_path}`, `{source_outline.architecture_path}`
+**산출물 위치**: `{output_dir}/`
+**모드**: 탐색적 (orientation) — 고착 효과 방지 필터 적용
+**교수 모델**: {teaching_model_한글} (검색 키워드에 반영)
+**활동 전략**: {activity_strategies_한글} (검색 키워드에 반영)
+**제약**: 웹 검색 15회, NBLM 쿼리 노트북당 5회 이내
+```
+
+**완료 확인**: `{output_dir}/research_exploration.md` 존재 확인
 
 ### Phase 3: 브레인스토밍 → brainstorm-agent (발문, 활동, 사례 구상)
 
