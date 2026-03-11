@@ -231,9 +231,79 @@ prompt: |
 2. Read로 architecture.md 로드 → §8 검증 결과 섹션에서 6항목 모두 "Pass" 확인
 3. §3 차시별 내부 구조에서 Gagne 체크 값이 모든 차시에서 7/9 이상인지 확인
 
-### Phase 6: 교안 작성 → writer-agent (섹션별 스크립트, 발문, 활동, 평가문항)
+### Phase 6: 교안 작성 → writer-agent (full script + 강사대본)
 
-<!-- TODO: Phase 6 프롬프트 구현 예정 -->
+**사전 처리** (오케스트레이터 수행):
+
+1. `{output_dir}/input_data.json` Read:
+   - `script_config.teaching_model` 추출
+   - schedule에서 `total_sessions`, `days` 계산
+2. **분할 판단**:
+   - `total_sessions ≤ 10` → 단일 모드
+   - `total_sessions > 10` → Day별 분할 (total_parts = days + 2)
+3. `{output_dir}/architecture.md` Read → §8 검증 결과 6항목 Pass 재확인
+
+**단일 모드 Agent 호출** (total_sessions ≤ 10):
+
+```
+subagent_type: writer-agent
+prompt: |
+  이전 Phase 산출물을 통합하여 강의교안(full script)을 작성하세요.
+
+  **지시사항**: `.claude/agents/writer-agent/AGENT.md`를 읽고
+  "강의교안 작성 (Phase 6) 세부 워크플로우" 섹션의 Step 0~6을 실행하세요.
+
+  **입력**:
+  - {output_dir}/architecture.md
+  - {output_dir}/brainstorm_result.md
+  - {output_dir}/research_deep.md
+  - {output_dir}/input_data.json
+  - {output_dir}/context7_reference.md (존재 시)
+
+  **템플릿**: `.claude/templates/script-template.md`
+  **산출물**: `{output_dir}/lecture_script.md`
+
+  **제약**: 도구 Read, Write, Glob만 사용. 외부 검색 없음. Agent 중첩 금지.
+```
+
+**Day별 분할 모드** (total_sessions > 10):
+
+오케스트레이터가 Part별로 writer-agent를 순차 호출한다.
+각 Part 호출 시 prompt에 `모드: part ({K}/{N})` + `범위: {해당 범위}` 파라미터를 추가한다.
+
+- Part 1/{N}: `범위: §1~§3`, `동작: Write 신규`
+- Part 2~{N-1}/{N}: `범위: §4 Day {K-1}`, `동작: Read 기존 + append`
+- Part {N}/{N}: `범위: §5~§8`, `동작: Read 기존 + append`
+
+```
+subagent_type: writer-agent
+prompt: |
+  이전 Phase 산출물을 통합하여 강의교안(full script)을 작성하세요.
+
+  **지시사항**: `.claude/agents/writer-agent/AGENT.md`를 읽고
+  "강의교안 작성 (Phase 6) 세부 워크플로우" 섹션을 따르세요.
+
+  **모드**: part ({K}/{N})
+  **범위**: {해당 Part의 섹션 범위}
+  **동작**: {Write 신규 / Read 기존 + append}
+
+  **입력**:
+  - {output_dir}/architecture.md
+  - {output_dir}/brainstorm_result.md
+  - {output_dir}/research_deep.md
+  - {output_dir}/input_data.json
+  - {output_dir}/context7_reference.md (존재 시)
+
+  **템플릿**: `.claude/templates/script-template.md`
+  **산출물**: `{output_dir}/lecture_script.md`
+
+  **제약**: 도구 Read, Write, Glob만 사용. 외부 검색 없음. Agent 중첩 금지.
+```
+
+**완료 확인** (3단계):
+1. `{output_dir}/lecture_script.md` 존재 확인 (Glob)
+2. Read → §4에서 모든 Day 존재 확인
+3. Gagne 체크 값이 모든 차시에서 7/9 이상 확인
 
 ### Phase 7: 품질 검토 → review-agent (목표-활동-평가 정렬, 시간 배분)
 
