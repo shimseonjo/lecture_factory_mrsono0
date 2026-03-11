@@ -166,12 +166,14 @@ Phase 5(아키텍처 설계)에서 일별 시간표를 자동 생성하여 Phase
 | Phase | 단계 | 에이전트 | 핵심 작업 |
 |-------|------|---------|----------|
 | 1 | 입력 수집 | input-agent | 구성안 3파일 로드 + S0~S6 자동 추론/확인 (AskUserQuestion 1회) → input_data.json |
-| 2 | 탐색적 리서치 | research-agent | 교수법 사례, 유사 교안 벤치마킹, 실생활 사례 탐색 (방향 설정) |
-| 3 | 브레인스토밍 | brainstorm-agent | 발문 설계(Bloom's 기반), 학습활동 아이디어, 실생활 사례 구상 |
+| 2 | 탐색적 리서치 | research-agent | 5자료원 통합(구성안+로컬+NBLM+웹) → 5개 주제 축(교수법/활동/사례/오개념/발문) 탐색, 고착 효과 방지 필터 |
+| 3 | 브레인스토밍 | brainstorm-agent | 4가지 발산 기법(HMW/SCAMPER/학제간융합/강제제약) → 발문(Bloom's×Socratic), 학습활동(GRR), 사례·훅, 설명 전략, Gagne 9사태, 오개념 해소 |
 | 4 | 심화 리서치 | research-agent | 브레인스토밍 기반 예시 자료, 보충 콘텐츠, 참고 문헌 |
 | 5 | 교안 구조 설계 | architecture-agent | 교수 모델별 도입-전개-정리 비율, Gagne 9사태 적용, SLO별 형성평가 배정, 시간 배분 |
 | 6 | 교안 작성 | writer-agent | full_script(L5) 완전 스크립트 — 교안(학습 내용) + 강사대본(발화문) + 발문 + 활동 + 평가문항 |
 | 7 | 품질 검토 | review-agent | 목표-활동-평가 정렬, Gagne 9사태 체크리스트, 시간 배분 현실성, 용어/톤 일관성 |
+
+> **구현 상태**: Phase 1~3 설계·구현 완료. Phase 4~7 추후 구현 예정.
 
 **적용 프레임워크**:
 - Madeline Hunter 6단계 (직접교수법)
@@ -305,7 +307,7 @@ PBL:        도입 10% / 전개 75% / 정리 15%  (GRR: You Do Together 중심)
 7. 심화 리서치 요청 사항 (Phase 4 전달용)
 8. Decision Log (ADOPT/REVISE/DROP/MERGE)
 
-상세 워크플로우: `.claude/agents/brainstorm-agent/AGENT.md` "강의교안 브레인스토밍 (Phase 3)" 섹션 참조
+상세 워크플로우: `.claude/agents/brainstorm-agent/AGENT.md` "강의교안 브레인스토밍 (Phase 3) 세부 워크플로우" 섹션 참조
 
 **데이터 흐름**:
 ```
@@ -435,6 +437,9 @@ lectures/
 | **Before/During/After** | 교안 (플립러닝) | 사전학습 확인 → 심화활동 → 적용·정리 |
 | **GRR** | 교안 | I Do(시범) → We Do(안내연습) → You Do(독립연습) — 교수 모델별 중심 단계 상이 |
 | **Bloom's 발문 매핑** | 교안 | 차시별 Bloom's 수준에 따른 수업 단계별 발문 수준 자동 배정 |
+| **소크라테스식 발문 6유형** | 교안 | 명료화 → 가정 탐색 → 근거 탐구 → 함의·결과 → 관점·시각 → 메타인지 (Bloom's 수준 교차 매핑) |
+| **SCAMPER (교안 활동 설계)** | 교안 브레인스토밍 | 대체/결합/적응/변형/전용/제거/역전 — 학습활동 다양화 및 형성평가 설계 |
+| **HMW (How Might We)** | 교안 브레인스토밍 | SLO를 HMW 질문으로 변환하여 배달 형태에 갇히지 않는 학습 문제 중심 발상 |
 | **QM Rubric** | 품질 검토 | 8개 일반 기준, 목표-활동-평가 정렬 |
 | **2-Pass Research** | 구성안, 교안 | 탐색적 리서치(문제 공간) → 브레인스토밍 → 심화 리서치(아이디어 검증) |
 | **Assertion-Evidence** | 슬라이드 | 주장 제목 + 시각 증거 (불릿포인트 대체) |
@@ -458,6 +463,10 @@ lectures/
 ### 브레인스토밍 · 창의적 아이디어 생성
 - Minas et al. 2018, Decision Sciences (프라이밍과 전자 브레인스토밍)
 - Kohn & Smith 2011, Applied Cognitive Psychology (고착 효과)
+- eLearning Industry (HMW 기법 — Design Thinking 교수설계 적용)
+- ScienceDirect 2025 (SCAMPER+PBL 창의성 4지표 유의미 향상)
+- NIU CITL (강제 제약 기법 — 핵심 아이디어 촉발)
+- Paul & Elder, Foundation for Critical Thinking (소크라테스식 발문 6유형)
 
 ### 강의 · 교안 설계
 - Carnegie Mellon Eberly Center (강의계획서 설계)
