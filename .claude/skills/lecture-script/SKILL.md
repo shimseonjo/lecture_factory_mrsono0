@@ -247,6 +247,7 @@ lectures/YYYY-MM-DD_{강의명}/02_script/
 ├── research_exploration.md      # Phase 2: 탐색적 리서치
 ├── brainstorm_result.md         # Phase 3: 브레인스토밍
 ├── research_deep.md             # Phase 4: 심화 리서치
+├── context7_reference.md        # Phase 5: 기술 문서 참조 (오케스트레이터 사전 수집, 기술 교육 시)
 ├── architecture.md              # Phase 5: 교안 구조 설계
 ├── lecture_script.md            # Phase 6: 최종 교안 (교안+강사대본) ★
 └── quality_review.md            # Phase 7: 품질 검토

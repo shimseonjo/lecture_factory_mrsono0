@@ -183,12 +183,12 @@ Phase 5(아키텍처 설계)에서 일별 시간표를 자동 생성하여 Phase
 - GRR — Gradual Release of Responsibility (I Do → We Do → You Do)
 - Bloom's Taxonomy 기반 발문 수준 자동 매핑
 
-**교안 구조** (교수 모델별 자동 비율):
+**교안 구조** (교수 모델별 자동 비율, 50분 기준):
 ```
-직접교수법:  도입 10% / 전개 60% / 정리 30%  (GRR: I Do → We Do → You Do)
-PBL:        도입 10% / 전개 75% / 정리 15%  (GRR: You Do Together 중심)
-플립러닝:    도입  5% / 전개 80% / 정리 15%  (GRR: We Do → You Do Together)
-혼합:       도입 10% / 전개 70% / 정리 20%  (차시별 모델 지정)
+직접교수법:  도입 16% (8분) / 전개 70% (35분) / 정리 14% (7분)  (GRR: I Do → We Do → You Do)
+PBL:        도입 20% (10분) / 전개 70% (35분) / 정리 10% (5분)  (GRR: We Do Together 중심)
+플립러닝:    도입 10% (5분) / 전개 80% (40분) / 정리 10% (5분)  (GRR: We Do → You Do Together)
+혼합:       차시별 해당 모델의 비율 적용
 ```
 
 **스크립트 상세도**: `full_script`(L5) 고정 — 초보 강사가 교안+대본만 보고 강의 가능
@@ -546,6 +546,8 @@ lectures/
 | **2-Pass Research** | 구성안, 교안 | 탐색적 리서치(문제 공간) → 브레인스토밍 → 심화 리서치(아이디어 검증) |
 | **deep-research 8단계** | 구성안 Phase 4, 교안 Phase 4 | Scope→Plan→Retrieve→Triangulate→Synthesize→Critique→Refine→Package (브레인스토밍 결과 심화 검증) |
 | **교수법 효과성 3중 검증** | 교안 Phase 4 | 효과 크기(d≥0.4) + 맥락 전이({target_learner} 적용 가능) + SLO 측정 타당성 |
+| **CMU Eberly 3점 형성평가 배치** | 교안 Phase 5 | Entry(도입 사태3 후)-During(전개 We Do 후)-Exit(정리 사태8) 3시점 배치 |
+| **Context7 MCP 기술 문서 통합** | 교안 Phase 5-6 | 라이브러리 자동 판별 → resolve-library-id → get-library-docs → 최신 문서/코드 예제 수집 |
 | **Assertion-Evidence** | 슬라이드 | 주장 제목 + 시각 증거 (불릿포인트 대체) |
 
 ---
@@ -581,6 +583,16 @@ lectures/
 - Perkins, D.N. & Salomon, G. (2012). Knowledge to Go: Transfer of Learning (맥락 전이 이론)
 - Black, P. & Wiliam, D. (2009). Formative Assessment Impact Meta-Analysis, Review of Educational Research
 - Heritage, M. (2007). Formative Assessment: What Do Teachers Need to Know and Do?
+
+### 교안 구조 설계 (Phase 5)
+- Michigan CRLT (강의 분절 10-15분 규칙, bridging activities)
+- U. Florida CITT, Utah State, NIU CITL (Gagne 9사태 × 도입-전개-정리 매핑)
+- Fisher & Frey, DePaul University, ASCD (GRR 4단계 모델)
+- CMU Eberly Center, Columbia CPET (형성평가 3점 배치 — Entry/During/Exit)
+- U. Pittsburgh, UNC Learning Center, TopHat (Bloom's 발문 수준 패턴)
+- Oregon GTF Manual, Ausubel (차시 간 전환 Preview-Review)
+- Study.com (강의 전환 전략)
+- CITL Illinois (PBL 수업 구조), Hunter 7단계 (직접교수법), CMU Flipped Classroom
 
 ### 강의 · 교안 설계
 - Carnegie Mellon Eberly Center (강의계획서 설계)
