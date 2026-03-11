@@ -65,6 +65,37 @@ Step 0: 입력 로드 + 검증 (GAIDE Setup)
 └── lecture_outline.md    # Phase 6: 최종 강의구성안 ★
 ```
 
+### 분할 작업 모드 (Part Mode)
+
+오케스트레이터가 `모드: part (N/3)` 파라미터를 전달한 경우, 아래 규칙을 따른다.
+파라미터가 없으면 기존 방식(전체 1회 작성)으로 동작한다.
+
+#### Part 1/3: §1~§4 작성
+
+- Step 0(입력 로드) + Step 1(§1~§2) + Step 2(§3~§4) 만 실행
+- `lecture_outline.md`에 메타데이터 + §1~§4를 Write
+- §5~§9는 작성하지 않는다
+
+#### Part 2/3: §5 전반부 append
+
+- Step 0(입력 로드) + 기존 `lecture_outline.md` Read
+- Step 3의 §5-1(일별 테마), §5-2(공통 가이드), §5-3 중 지정된 Day 범위만 실행
+- 기존 `lecture_outline.md`를 Read한 뒤 끝에 새 내용을 추가하여 Write
+- §5-1, §5-2는 Part 2에서만 작성 (Part 3에서 중복 작성하지 않는다)
+
+#### Part 3/3: §5 후반부 + §6~§9 append
+
+- Step 0(입력 로드) + 기존 `lecture_outline.md` Read
+- Step 3의 §5-3 중 지정된 Day 범위 + Step 4(§6~§7) + Step 5(§8~§9) 실행
+- 기존 `lecture_outline.md`를 Read한 뒤 끝에 새 내용을 추가하여 Write
+
+#### 분할 모드 공통 규칙
+
+- 각 Part는 이전 Part가 작성한 내용을 수정하지 않는다
+- 이어쓰기 시 이전 내용 끝에 빈 줄 1개 추가 후 새 내용을 작성한다
+
+---
+
 ### 금지 사항
 
 - **차시 배치 변경 금지**: architecture.md §4의 교시 순서, 시간, 하위 주제 배정을 변경하지 않는다
@@ -118,6 +149,9 @@ Step 0: 입력 로드 + 검증 (GAIDE Setup)
 - **§1-2 시간 예산 테이블**: architecture §1의 시간 예산 데이터를 그대로 옮긴다
 - **§1-3 배정 현황 테이블**: architecture §1의 Must/Should/Could 배정 데이터를 그대로 옮긴다
 - 시간 조정 내역이 있으면 architecture §1에서 추출하여 기록
+- **§1-4 일별 시간표**: architecture §4-2.5의 일별 시간표 데이터를 그대로 옮긴다
+  - Day별 시간표 테이블: 시간, 구분(수업/휴식/점심), 교시, 내용, 활동 유형
+  - 시간 정보는 architecture.md에서 이미 계산되어 있으므로 재계산하지 않는다
 
 #### 1-2. §2 학습자 프로파일
 
