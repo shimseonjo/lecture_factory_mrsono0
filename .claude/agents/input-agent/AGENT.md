@@ -126,16 +126,19 @@ PBL + AI-first, 실습 비율 50% 이상
   │     ├─ lecture_outline.md + input_data.json + architecture.md 로드
   │     └─ 02_script/ 폴더 생성
   │
-  ├── Step 1: 사용자 질문 — AskUserQuestion 1회 (S0 + S1a + S1b)
+  ├── Step 1: 자동 결정 (S0~S6 — 질문 없음, 전부 자동 추론)
+  │     ├─ S0: 기본값 "전체 차시"
+  │     ├─ S1a: architecture.md 활동 유형 키워드 분석 → 교수 모델 추론
+  │     ├─ S1b: architecture.md 활동 유형 키워드 분석 → 활동 전략 추론
+  │     └─ S2~S6: 기존 자동 결정 로직
   │
-  ├── Step 2: 자동 결정 (S2~S6 — 질문 없음)
+  ├── Step 2: 전체 설정 요약 + 사용자 확인 — AskUserQuestion 1회
+  │     └─ S0~S6 전체 요약 출력 → "이 설정으로 진행할까요?" 확인
   │
-  ├── Step 3: 자동 결정 요약 출력 (확인용)
-  │
-  └── Step 4: input_data.json 생성 → Phase 2로 전달
+  └── Step 3: input_data.json 생성 → Phase 2로 전달
 ```
 
-**총 AskUserQuestion 호출**: 1회 (폴더 선택 포함 시 최대 2회)
+**총 AskUserQuestion 호출**: 1회 확인용 (폴더 선택 포함 시 최대 2회)
 
 ### Step 0: 이전 산출물 탐색 + 로드
 
@@ -164,66 +167,35 @@ PBL + AI-first, 실습 비율 50% 이상
 
 선택된 강의 루트 폴더 아래 `02_script/` 폴더를 생성한다.
 
-### Step 1: 사용자 질문 — AskUserQuestion 1회 (3개 질문)
+### Step 1: 전체 자동 결정 (S0~S6 — 질문 없음)
 
-S1a/S1b는 Step 0에서 로드한 데이터를 먼저 분석(§추론 알고리즘)한 뒤, 추론 결과를 "(추천)" 레이블로 제시한다.
+Step 0에서 로드한 데이터를 기반으로 S0~S6 전부를 자동 결정한다. 사용자 질문 없음.
 
-#### S0. 교안 작성 범위
+#### S0. 교안 작성 범위 → `all` (전체 차시) 기본값
 
-```json
-{
-  "question": "교안을 전체 차시에 작성할까요, 특정 차시만 작성할까요?",
-  "header": "작성 범위",
-  "multiSelect": false,
-  "options": [
-    { "label": "전체 차시 (추천)", "description": "구성안의 모든 Day에 대해 교안 작성" },
-    { "label": "특정 차시만 선택", "description": "Day 번호를 지정하여 부분 작성 (Other에 입력)" }
-  ]
-}
-```
+구성안의 모든 Day에 대해 교안을 작성한다. 기본값: `"all"`.
 
-- "특정 차시만 선택" 시 → Other로 Day 번호 입력 (예: "1, 3" 또는 "Day 1~Day 3")
+- `lecture_outline.md`에서 Day 목록과 차시 수를 파싱하여 `scope.days` 배열에 저장
+- 예: `["Day 1", "Day 2", "Day 3"]`
 
-#### S1a. 교수 모델 (단일 선택 — 자동 추론 결과 확인)
+#### S1a. 교수 모델 → architecture.md 자동 추론 (§추론 알고리즘 참조)
 
-```json
-{
-  "question": "구성안 분석 결과 '{추론된 모델}'이 추천됩니다. 교수 모델을 확인하세요.",
-  "header": "교수 모델",
-  "multiSelect": false,
-  "options": [
-    { "label": "{추론 결과} (추천)", "description": "{추론 근거}" },
-    { "label": "직접교수법", "description": "체계적 설명→시범→연습 (Hunter 6단계)" },
-    { "label": "PBL", "description": "실세계 문제 해결 (문제→탐구→해결→발표)" },
-    { "label": "플립러닝", "description": "사전학습 후 심화 실습/토론 (Before/During/After)" }
-  ]
-}
-```
+`architecture.md` §4-2 활동 유형 키워드를 카운팅하여 교수 모델을 자동 결정한다.
+추론 알고리즘은 아래 "S1a/S1b 자동 추론 알고리즘" 섹션을 따른다.
 
-- 추론된 모델이 첫 번째 옵션, 나머지는 대안으로 제시
-- "혼합"은 Other로 입력 시 처리
+- 추론 성공 시: 결과를 `teaching_model`에 저장 + 추론 근거 기록
+- 추론 실패 시 (architecture.md 없음 또는 스코어 0): pedagogy 폴백 → 그래도 실패 시 `"mixed"` 기본값
 
-#### S1b. 활동 전략 (복수 선택 — 자동 추론 결과 확인)
+#### S1b. 활동 전략 → architecture.md 자동 추론 (§추론 알고리즘 참조)
 
-```json
-{
-  "question": "구성안 분석 결과 아래 활동이 추천됩니다. 확인/변경하세요.",
-  "header": "활동 전략",
-  "multiSelect": true,
-  "options": [
-    { "label": "개인 실습", "description": "I Do→You Do 구조의 개인 연습" },
-    { "label": "그룹 활동", "description": "소그룹 협업, 페어 프로그래밍" },
-    { "label": "토론·발문", "description": "Bloom's 기반 발문, 소크라테스식 질의" },
-    { "label": "프로젝트", "description": "차시를 관통하는 누적 산출물" }
-  ]
-}
-```
+`architecture.md` §4-2 활동 유형 키워드에서 활동 전략을 자동 추출한다.
+추론 알고리즘은 아래 "S1a/S1b 자동 추론 알고리즘" 섹션을 따른다.
 
-- 추론 결과에 해당하는 옵션을 label에 "(추천)" 추가하여 기본 선택 유도
+- 추출된 전략이 0개면 기본값 `["individual_practice", "group_activity"]`
 
-### Step 2: 자동 결정 (질문 없음)
+#### S2~S6: 기존 자동 결정 로직
 
-Step 1 완료 후, 아래 항목을 구성안 데이터에서 자동 결정한다.
+아래 항목을 구성안 데이터에서 자동 결정한다.
 
 #### S2. 스크립트 상세도 → `full_script` (L5) 고정
 
@@ -301,8 +273,8 @@ total = direct_score + pbl_score + flipped_score
 ratio = max_score / total (total > 0일 때)
 
 if total == 0: → 2차 추론(pedagogy)으로 폴백
-elif ratio >= 0.50: → 최고 스코어 모델 추천
-else: → "mixed" 추천
+elif ratio >= 0.50: → 최고 스코어 모델 결정
+else: → "mixed" 결정
 ```
 
 **키워드 → 활동 전략(S1b)**:
@@ -325,7 +297,7 @@ architecture.md가 없거나 1차 스코어가 모두 0일 때, `input_data.json
 | 1 | `"pbl"` 또는 `"문제기반"` 또는 `"프로젝트 기반"` | `pbl` |
 | 2 | `"플립"` 또는 `"flipped"` 또는 `"사전학습"` | `flipped` |
 | 3 | `"직접교수"` 또는 `"direct instruction"` 또는 `"강의식"` | `direct_instruction` |
-| 4 | 위 모두 없음 | 기본값 없음 → 사용자 직접 선택 |
+| 4 | 위 모두 없음 | `mixed` 기본값 |
 
 S1b pedagogy 폴백:
 
@@ -340,31 +312,52 @@ S1b pedagogy 폴백:
 
 1차(architecture.md)와 2차(pedagogy) 결과가 불일치하면:
 - **1차 결과를 우선** 적용 (실제 차시 구조에 기반)
-- AskUserQuestion description에 부기: "차시 구조 분석: {1차 결과} / 교수 전략 텍스트: {2차 참고}"
+- Step 2 요약에 부기: "차시 구조 분석: {1차 결과} / 교수 전략 텍스트: {2차 참고}"
 
-### Step 3: 자동 결정 요약 출력
+### Step 2: 전체 설정 요약 + 사용자 확인 — AskUserQuestion 1회
 
-사용자에게 전체 설정을 확인용으로 출력한다 (질문 아님):
+Step 1에서 자동 결정한 S0~S6 전체를 요약하여 사용자에게 확인받는다.
+
+#### 요약 형식
 
 ```
-📋 교안 설정 요약
+📋 교안 설정 요약 (구성안 자동 분석 결과)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[사용자 선택]
-• 작성 범위: {S0 결과}
-• 교수 모델: {S1a 결과}
-• 활동 전략: {S1b 결과}
-
-[자동 결정]
-• 스크립트 상세도: 완전 스크립트 (L5) — 초보 강사용
-• 형성평가: {S3 결과} — architecture.md 기반
-• 시간 비율: 도입 {X}% / 전개 {Y}% / 정리 {Z}%
-• 참고자료: 로컬({N}개) + NotebookLM({M}개) + 인터넷 리서치
-• Bloom's 발문: 차시별 자동 매핑
-• Gagne 9사태: 체크리스트 (Phase 7 검증)
+• 작성 범위(S0): 전체 차시 ({Day 목록})
+• 교수 모델(S1a): {추론 결과} — 근거: {추론 근거 요약}
+• 활동 전략(S1b): {추론 결과 목록} — 근거: {키워드 요약}
+• 스크립트 상세도(S2): 완전 스크립트 (L5) — 초보 강사용
+• 형성평가(S3): {S3 결과} — architecture.md 기반
+• 시간 비율(S4): 도입 {X}% / 전개 {Y}% / 정리 {Z}%
+• 참고자료(S5): 로컬({N}개) + NotebookLM({M}개) + 인터넷 리서치
+• Bloom's 발문(S6): 차시별 자동 매핑
+• Gagne 9사태(S6): 체크리스트 (Phase 7 검증)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-### Step 4: input_data.json 생성
+위 요약을 AskUserQuestion의 description에 포함하여 확인 질문을 보낸다.
+
+#### 확인 질문 스키마
+
+```json
+{
+  "question": "위 설정으로 교안 작성을 진행할까요?",
+  "header": "설정 확인",
+  "multiSelect": false,
+  "options": [
+    { "label": "진행", "description": "위 설정 그대로 교안 작성 시작" },
+    { "label": "변경 필요", "description": "수정할 항목을 Other에 입력 (예: 'S0: Day 1만', 'S1a: PBL')" }
+  ]
+}
+```
+
+- **"진행"** 선택 시 → Step 3으로 진행
+- **"변경 필요"** 또는 **Other** 선택 시 → 입력된 변경 사항을 해당 항목에 반영 후 Step 3 진행
+  - 변경 형식: `"항목: 값"` (예: `"S0: Day 1, 3"`, `"S1a: PBL"`, `"S1b: 개인 실습, 프로젝트"`)
+  - 변경된 항목만 갱신, 나머지는 자동 결정값 유지
+  - S1a 변경 시 → S4(시간 비율), S6(Bloom's 매핑)도 연쇄 재계산
+
+### Step 3: input_data.json 생성
 
 1. 구성안 `01_outline/input_data.json`의 **전체 필드를 복사**
 2. `script_config` 객체 추가 (S0~S6 결과)
@@ -379,18 +372,20 @@ S1b pedagogy 폴백:
 |------|------|
 | 구성안 0개 | 에러 + `/lecture-outline` 먼저 실행 안내 → 중단 |
 | `lecture_outline.md` 없음 | 에러: "구성안이 완성되지 않았습니다." → 중단 |
-| `architecture.md` 없음 | 경고 → 자동 추론 건너뜀, S1a/S1b 사용자 직접 선택, S3/S4/S6 기본값 |
-| 교수법 추론 실패 | "(추천)" 없이 S1a 질문 제시, 사용자 직접 선택 |
+| `architecture.md` 없음 | 경고 → S1a/S1b pedagogy 폴백 적용, S3 기본값 `sectional_check`, S6 Bloom's 건너뜀 |
+| S1a 추론 실패 (1차+2차 모두) | `mixed` 기본값 적용 + Step 2 요약에 "추론 불가, 기본값 적용" 명시 |
+| S1b 추론 결과 0개 | 기본값 `["individual_practice", "group_activity"]` 적용 |
 | `02_script/` 이미 존재 | 덮어쓰기 확인 → Yes: 계속 / No: 중단 |
 | architecture.md에 형성평가 섹션 없음 | S3 기본값 `sectional_check` 적용 |
 | architecture.md에 Bloom's 열 없음 | S6 Bloom's 매핑 건너뜀 |
+| Step 2에서 "변경 필요" 선택 | 변경 항목만 갱신, 연쇄 항목(S4/S6) 재계산 |
 
 ## 워크플로우별 동작
 
 | 워크플로우 | 수집 항목 |
 |-----------|----------|
 | 강의구성안 | Q1~Q12 질문 구조 → input_data.json 생성 |
-| 강의교안 | S0~S6: 구성안 로드 → 자동 추론 → 사용자 확인(1회) → 자동 결정 → input_data.json 생성 |
+| 강의교안 | S0~S6: 구성안 로드 → 전체 자동 결정 → 요약 확인(1회) → input_data.json 생성 |
 | 슬라이드 기획 | 교안 로드, 슬라이드 도구/형식 선택 |
 | 슬라이드 생성 | 기획안 로드, 출력 형식 선택 (Marp/Slidev/Gamma 등) |
 

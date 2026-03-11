@@ -18,7 +18,7 @@
     "teaching_model": {
       "type": "string",
       "enum": ["direct_instruction", "pbl", "flipped", "mixed"],
-      "description": "S1a: 교수 모델 — architecture.md 분석 후 사용자 확인"
+      "description": "S1a: 교수 모델 — architecture.md 활동 유형 키워드 분석으로 자동 결정"
     },
     "mixed_model_map": {
       "type": "object",
@@ -31,7 +31,7 @@
         "type": "string",
         "enum": ["individual_practice", "group_activity", "discussion", "project"]
       },
-      "description": "S1b: 활동 전략 목록 — architecture.md 분석 후 사용자 확인"
+      "description": "S1b: 활동 전략 목록 — architecture.md 활동 유형 키워드 분석으로 자동 결정"
     },
     "script_detail_level": {
       "type": "string",
