@@ -81,8 +81,9 @@ Step 0: 입력 로드 + 시간 예산 계산
 
 **동작**:
 
-1. `input_data.json` 읽기 — 시간 관련 필드 추출:
+1. `input_data.json` 읽기 — 시간 관련 필드 + 환경 필드 추출:
    - `schedule.days`, `schedule.hours_per_day`, `schedule.session_minutes`, `schedule.break_minutes`
+   - `lab_environment` (Q14) — 실습 교시의 환경 설정 시간 추산에 활용
 2. `brainstorm_result.md` 읽기 — 핵심 필드 추출:
    - §1 학습자 페르소나
    - §2 하위 주제 목록 (Must/Should/Could + 예상 소요 시간)
@@ -105,6 +106,9 @@ Step 0: 입력 로드 + 시간 예산 계산
 
 예약 시간 차감:
   - Day 1 오리엔테이션: 1~2교시 (강의 개요, 환경 설정, 아이스브레이킹)
+  - Day 1 환경 구축 (lab_environment가 있을 때): 복잡도에 따라 1~2교시 추가 배정
+    - 도구 3개 이상: 환경 설정 전용 교시 배정 + 트러블슈팅 버퍼 교시당 5~10분
+    - 도구 2개 이하: 오리엔테이션에 통합
   - Day 2~N 아침 루틴: 각 0.5교시 (전일 복습, 발견 공유)
   - 최종일 마무리: 2~3교시 (통합 프로젝트 발표, 회고, 다음 단계 안내)
 
@@ -366,6 +370,7 @@ brainstorm_result.md §2의 하위 주제를 일별 테마에 배정한다:
 이론-실습 비율은 `input_data.json`의 `pedagogy` 필드를 참조한다:
 - "실습 비율 50% 이상"이면: 이론 20~25분 + 실습 20~25분 + 도입/정리 5~10분
 - Gradual Release 적용: I Do(강사 시연) → We Do(함께 실습) → You Do(독립 실습)
+- `lab_environment`가 있으면 실습 교시의 "필요 소프트웨어" 열에 해당 환경의 구성 요소를 명시
 
 #### 3-3.5. 일별 시간표(Timetable) 생성
 

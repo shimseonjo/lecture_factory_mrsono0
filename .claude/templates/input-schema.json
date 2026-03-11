@@ -126,6 +126,16 @@
       "type": "string",
       "default": "독립 강의",
       "description": "Q12: 커리큘럼 맥락 (독립 강의 / 시리즈의 N번째 등)"
+    },
+    "output_scope": {
+      "type": "string",
+      "default": "커리큘럼 + 세션 상세표",
+      "description": "Q13: 최종 산출물의 형태/범위 (예: '커리큘럼만', '커리큘럼 + 세션 상세표', '세션 상세표 + 실습 가이드')"
+    },
+    "lab_environment": {
+      "type": "string|null",
+      "default": null,
+      "description": "Q14: 실습 환경 제약 — OS, AI 도구, 에디터, 언어, 프레임워크, DB, 빌드 도구 등 (null이면 제약 없음)"
     }
   }
 }

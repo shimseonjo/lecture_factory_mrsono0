@@ -94,6 +94,7 @@ Step 0: 입력 로드 + 브레인스토밍 계획 수립
    - `topic` (Q1), `target_learner` (Q2), `learning_goals` (Q3)
    - `schedule` (Q5), `keywords` (Q6), `prerequisites` (Q7)
    - `exclusions` (Q8), `pedagogy` (Q10a), `tone` (Q10b)
+   - `lab_environment` (Q14)
 2. `research_exploration.md` 읽기 — §7 리서치 인사이트 추출:
    - 5~10개 방향성 인사이트를 브레인스토밍 시드(seed)로 분류
    - 각 인사이트의 관련 `learning_goal` 태깅 확인
@@ -127,7 +128,7 @@ Step 0: 입력 로드 + 브레인스토밍 계획 수립
 | 1 | Cross-Domain Analogies | **교차 도메인 비유** | 다른 분야/산업의 개념을 차용하여 학습 콘텐츠에 비유 도출 |
 | 2 | Assumption Reversal | **전제 뒤집기** | "학습자가 이미 안다면?", "순서를 역전시키면?", "이 개념이 불필요하다면?" |
 | 3 | Scale Shifting | **범위 전환** | 마이크로(개별 함수/개념) ↔ 매크로(시스템/전체 아키텍처) 수준에서 탐색 |
-| 4 | Constraint Removal/Addition | **제약 조건 변형** | "시간이 무제한이면?", "30분만 있다면?", "실습 환경이 없다면?" |
+| 4 | Constraint Removal/Addition | **제약 조건 변형** | "시간이 무제한이면?", "30분만 있다면?", "실습 환경이 없다면?", (lab_environment가 있으면) "이 환경에서만 가능한 활동은?" |
 | 5 | Interdisciplinary Fusion | **학제간 융합** | 인접 분야의 교수법/콘텐츠를 융합 (예: 게이미피케이션 + 코딩 교육) |
 | 6 | SCAMPER (교육 버전) | **커리큘럼 변형** | 기존 교육 모듈에 대해 대체/결합/적용/수정/전용/제거/뒤집기 |
 
@@ -234,8 +235,8 @@ multi-agent-brainstorming의 5개 역할을 교육 도메인으로 전용한다.
 | 항목 | 내용 |
 |------|------|
 | 역할 | 시간 배분 현실성, 실습 환경 제약, 선수 지식 전제 검증 |
-| 수행 | 클러스터별 예상 소요 시간 추산 → 총 가용 시간과 비교 |
-| 프롬프트 | "이 클러스터를 다루는 데 몇 분이 필요한가?", "전체 시간 예산 내에 들어오는가?" |
+| 수행 | 클러스터별 예상 소요 시간 추산 → 총 가용 시간과 비교. lab_environment가 있으면 실습 활동이 지정된 환경에서 실행 가능한지 검증 |
+| 프롬프트 | "이 클러스터를 다루는 데 몇 분이 필요한가?", "전체 시간 예산 내에 들어오는가?", (lab_environment가 있으면) "이 활동은 {lab_environment} 내에서 실행 가능한가?" |
 | 금지 | 학습 목표나 교수 전략을 변경하지 않음 |
 
 **4. 학습자 대변인 (User Advocate)**
@@ -517,7 +518,7 @@ Step 0: 입력 로드 + 브레인스토밍 계획 수립
 
 1. `.claude/templates/input-schema-script.json` 읽기 — script_config 각 필드의 enum 값, 의미, 필드 간 관계를 사전 이해
 2. `input_data.json` 읽기 — 교안 특화 필드 추출:
-   - 구성안 필드: `topic`, `target_learner`, `learning_goals`, `keywords`
+   - 구성안 필드: `topic`, `target_learner`, `learning_goals`, `keywords`, `lab_environment` (Q14)
    - `script_config`: `teaching_model`, `activity_strategies`, `time_ratio`, `bloom_question_map`, `instructional_model_map`, `formative_assessment`
 3. `research_exploration.md` §7 리서치 인사이트 추출 (브레인스토밍 시드):
    - 각 인사이트의 SLO/activity_strategy/Bloom's 태깅 확인
