@@ -73,12 +73,14 @@ Step 0: 입력 로드 + 리서치 계획 수립
 2. 핵심 필드 추출:
    - `topic` (Q1), `target_learner` (Q2), `learning_goals` (Q3)
    - `keywords` (Q6), `prerequisites` (Q7), `reference_sources` (Q11)
+   - `lab_environment` (Q14)
 3. 리서치 질문 자동 도출 (3~5개):
    - "이 주제의 최신 트렌드와 발전 방향은?"
    - "대상 학습자에 맞는 기존 교육 과정/사례는?"
    - "이 분야의 핵심 도전과제와 일반적 오해(misconception)는?"
    - "관련 산업/직무에서의 실제 활용 사례는?"
    - 키워드 기반 추가 질문
+   - (lab_environment가 있으면) "지정된 실습 환경({lab_environment})의 최신 버전, 호환성, 설치 가이드는?"
 4. `research_plan.md` 작성:
    - 리서치 질문 목록
    - 서브토픽 분류 (2~4개)
@@ -216,6 +218,8 @@ NBLM 응답 끝에 "Is that ALL you need to know?" 수신 시:
 - "{topic} tutorial best practices"
 - "{target_learner} {topic} 교육 사례"
 - "{keyword} 트렌드 2026"
+- (lab_environment가 있으면) "{lab_environment 도구명} setup guide tutorial"
+- (lab_environment가 있으면) "{lab_environment 도구명} compatibility {topic}"
 ```
 
 #### 3c. 주요 URL WebFetch (심화)
@@ -453,6 +457,7 @@ Step 0: 입력 변환 + 심화 리서치 계획 수립
    - `#` (요청 번호), `유형` (검증/보충), `요청 내용`, `관련 하위 주제`, `우선순위`
 2. `input_data.json` 핵심 필드 재확인:
    - `topic` (Q1), `keywords` (Q6), `reference_sources` (Q11)
+   - `lab_environment` (Q14)
 3. 각 요청을 deep-research 입력 형식으로 변환:
    - 요청 내용 → 명확한 리서치 질문으로 재구성
    - 유형(검증/보충) → 검색 전략 힌트 (아래 표 참조)
@@ -827,6 +832,7 @@ Step 0: 스키마 참조 + 입력 로드 + 리서치 계획 수립
    - `bloom_question_map.per_session` 구조 (차시별 수업 단계별 발문 수준) 이해
 2. `input_data.json` 읽기 — 스키마 기반으로 핵심 필드 추출:
    - `topic`(Q1), `target_learner`(Q2), `learning_goals`(Q3), `keywords`(Q6)
+   - `lab_environment`(Q14)
    - `script_config.teaching_model`(S1a), `script_config.activity_strategies`(S1b)
    - `script_config.formative_assessment`(S3), `script_config.bloom_question_map`(S6)
    - `script_config.instructional_model_map` (교수설계 모델 조합)
@@ -1255,6 +1261,7 @@ Step 0: 입력 변환 + 심화 리서치 계획 수립
    - §5(Gagne 구현): 9사태 구현 초안 → 교수법 검증의 참조
 3. `input_data.json` 핵심 필드 재확인:
    - `topic`, `target_learner`, `learning_goals`, `keywords`
+   - `lab_environment` (Q14)
    - `script_config.teaching_model` — 교수 모델 (direct_instruction/pbl/flipped/mixed)
    - `script_config.instructional_model_map` — 교수설계 모델 (primary_model, grr_focus, bloom_question_pattern)
    - `script_config.formative_assessment` — 형성평가 계획 (primary_type, assessment_plan)

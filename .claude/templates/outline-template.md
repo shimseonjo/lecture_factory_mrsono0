@@ -26,6 +26,8 @@
 | 톤·스타일 | {tone} |
 | 커리큘럼 맥락 | {context} |
 | 핵심 키워드 | {keywords} |
+| 산출 범위 | {output_scope} |
+| 실습 환경 | {lab_environment} |
 
 ### 1-2. 시간 예산
 
