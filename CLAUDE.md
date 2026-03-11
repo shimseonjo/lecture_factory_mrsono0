@@ -150,6 +150,22 @@ npx skills add <source> --copy -y
 npx skills add <source> -y
 ```
 
+### skills-lock.json 관리
+
+`npx skills add`는 프로젝트 루트에 `skills-lock.json`을 자동 생성한다. 이 파일은 설치된 외부 스킬의 소스·해시 메타데이터를 기록하며, 프로젝트에서는 `.claude/skills-lock.json`에서 관리한다.
+
+- 스킬 설치 후 루트에 `skills-lock.json`이 생성되면 `.claude/skills-lock.json`에 **병합**(신규 항목 추가, 기존 항목 해시 갱신)한 뒤 루트 파일을 삭제
+- `.claude/skills-lock.json`이 없으면 루트 파일을 그대로 `.claude/`로 이동
+
+```bash
+# 스킬 설치 후 lock 파일 병합 절차
+npx skills add <source> --copy -y
+
+# 루트에 skills-lock.json 생성 확인 → .claude/로 병합 후 삭제
+# (기존 .claude/skills-lock.json이 있으면 항목 병합, 없으면 이동)
+mv skills-lock.json .claude/skills-lock.json   # 또는 수동 병합 후 삭제
+```
+
 ### 설치 후 정리
 
 `npx skills add --copy`는 `.agent/`, `.agents/`, `.continue/`, `.kiro/`, `.windsurf/` 등 외부 에이전트 폴더도 자동 생성한다. 이 폴더들은 `.gitignore`에 등록되어 있으므로 커밋되지 않지만, 불필요 시 삭제해도 무방하다.
