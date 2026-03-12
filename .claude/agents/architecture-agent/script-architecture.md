@@ -102,10 +102,10 @@ Step 0: 입력 로드 + 변경 불가 기준 확정
 
 | 교수 모델 | 도입 | 전개 | 정리 | GRR 중심 |
 |-----------|------|------|------|---------|
-| direct_instruction | 16% (8분) | 70% (35분) | 14% (7분) | I Do → We Do → You Do |
-| pbl | 20% (10분) | 70% (35분) | 10% (5분) | We Do Together 중심 |
-| flipped | 10% (5분) | 80% (40분) | 10% (5분) | We Do → You Do Together |
-| mixed | 차시별 해당 모델의 비율 적용 | | | |
+| direct_instruction | 10% (5분) | 60% (30분) | 30% (15분) | I Do → We Do → You Do |
+| pbl | 10% (5분) | 75% (38분) | 15% (7분) | We Do Together 중심 |
+| flipped | 5% (3분) | 80% (40분) | 15% (7분) | We Do → You Do Together |
+| mixed | 10% (5분) | 70% (35분) | 20% (10분) | 차시별 모델 비율 적용 |
 
 `session_minutes`가 50분이 아닌 경우, 비율(%)을 기준으로 시간(분)을 재계산한다.
 

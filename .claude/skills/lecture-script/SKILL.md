@@ -2,7 +2,7 @@
 name: lecture-script
 description: 강의교안 생성 - 8단계 파이프라인 (입력수집 → 탐색리서치 → 브레인스토밍 → 심화리서치 → 구조설계 → 블록별작성 → 블록별검토 → 통합)
 context: fork
-allowed-tools: Agent, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion, TodoWrite
+allowed-tools: Agent, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion, TodoWrite, mcp__context7__resolve-library-id, mcp__context7__query-docs
 ---
 
 # 강의교안 생성 워크플로우
@@ -170,7 +170,7 @@ if all gate_items == PASS:
 
 **사전 처리** (오케스트레이터 수행):
 1. `{output_dir}/input_data.json` Read:
-   - `script_config.teaching_model` → 한글 변환 (direct_instruction→직접교수, pbl→문제기반학습, flipped→거꾸로교실, mixed→혼합)
+   - `script_config.teaching_model` → 한글 변환 (direct_instruction→직접교수법, pbl→PBL, flipped→플립러닝, mixed→혼합)
    - `script_config.reference_sources` → local_folders, notebooklm_urls, web_research 추출
    - `script_config.instructional_model_map` → primary_model, grr_focus 추출
    - `script_config.formative_assessment` → primary_type, assessment_plan 추출

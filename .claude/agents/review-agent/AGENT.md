@@ -31,6 +31,7 @@ model: sonnet
 |--------|-----------|
 | 강의구성안 + Phase 7 | `outline-review.md` |
 | 강의교안 + Phase 7 | `script-review.md` |
+| 강의교안 + Phase 8 (통합 검토) | `script-review.md` |
 
 **공통 판정 기준**: `shared/judgment-criteria.md`를 Read하여 따른다.
 
