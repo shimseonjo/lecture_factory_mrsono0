@@ -267,7 +267,7 @@ prompt: |
 subagent_type: architecture-agent
 prompt: |
   당신은 교안 구조 설계 에이전트입니다.
-  `.claude/agents/architecture-agent/AGENT.md`를 읽고 "강의교안 아키텍처 설계 (Phase 5) 세부 워크플로우" 섹션의 Step 0~4를 실행하세요.
+  `.claude/agents/architecture-agent/AGENT.md`를 읽고 라우팅에 따라 `script-architecture.md`를 로드하여 Step 0~4를 실행하세요.
 
   **입력 파일**:
   - input_data.json: `{output_dir}/input_data.json`

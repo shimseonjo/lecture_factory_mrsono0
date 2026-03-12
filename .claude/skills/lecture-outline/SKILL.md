@@ -132,7 +132,7 @@ $ARGUMENTS
 ```
 Backward Design 3단계를 역순 적용하여 강의 아키텍처를 설계하세요.
 
-**지시사항**: `.claude/agents/architecture-agent/AGENT.md`를 읽고 "강의구성안 아키텍처 설계 (Phase 5) 세부 워크플로우" 섹션을 따르세요.
+**지시사항**: `.claude/agents/architecture-agent/AGENT.md`를 읽고 라우팅에 따라 `outline-architecture.md`를 로드하여 따르세요.
 
 **입력**: `{output_dir}/brainstorm_result.md`, `{output_dir}/research_deep.md`, `{output_dir}/input_data.json`
 **스키마 참조**: `.claude/templates/input-schema.json` (필드 의미·유효값 이해용)
@@ -317,7 +317,7 @@ Phase 7 종료. 사용자에게 검토 요약을 보고한다:
 
 ### Phase 5: 아키텍처 설계 → architecture-agent
 
-**상세**: `.claude/agents/architecture-agent/AGENT.md`의 "강의구성안 아키텍처 설계 (Phase 5) 세부 워크플로우" 섹션 참조
+**상세**: `.claude/agents/architecture-agent/AGENT.md` 라우팅 → `outline-architecture.md` 참조
 
 ### Phase 6: 구성안 작성 → writer-agent
 
