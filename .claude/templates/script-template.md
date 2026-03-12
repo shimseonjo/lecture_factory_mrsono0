@@ -16,6 +16,7 @@
 | 교수 모델 | {직접교수법/PBL/플립러닝} |
 | GRR 중심 | {I Do→We Do→You Do / We Do Together / We Do→You Do Together} |
 | 차시 유형 | {신규 개념/기존 심화/복습·통합} |
+| content_type | {hands-on / concept / activity} |
 
 ---
 
