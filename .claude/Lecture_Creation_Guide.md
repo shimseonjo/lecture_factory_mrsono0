@@ -210,9 +210,9 @@ Phase 5(아키텍처 설계)에서 일별 시간표를 자동 생성하여 Phase
 | 3 | 브레인스토밍 | brainstorm-agent | 4가지 발산 기법(HMW/SCAMPER/학제간융합/강제제약) → 발문(Bloom's×Socratic), 학습활동(GRR), 사례·훅, 설명 전략, Gagne 9사태, 오개념 해소 |
 | 4 | 심화 리서치 | research-agent | 브레인스토밍 기반 교수법 효과성 검증(효과 크기+맥락 전이+SLO 측정), 활동 보충(루브릭/발문/템플릿), 사실 확인 |
 | 5 | 교안 구조 설계 | architecture-agent | 교수 모델별 도입-전개-정리 비율, Gagne 9사태 적용, SLO별 형성평가 배정, 시간 배분 |
-| 6 | 블록별 교안 작성 | writer-agent | 동적 블록 분할 + full_script(L5) 완전 스크립트 — 교안(학습 내용) + 강사대본(발화문) + 발문 + 활동 + 평가문항. brainstorm 소재 필수 통합, 친절한 구어체 |
+| 6 | 차시별 교안 작성 | writer-agent | 동적 블록 분할 + **차시별 독립 파일(`session_*.md`)** 작성. full_script(L5) 완전 스크립트 — 교안(학습 내용) + 강사대본(발화문) + 발문 + 활동 + 평가문항. brainstorm 소재 필수 통합, 친절한 구어체 |
 | 7 | 블록별 품질 검토 | review-agent | 블록 단위 6영역 검증 루프 — REVISION_REQUIRED 시 해당 블록만 재작성(최대 1회). G(Gagne/GRR) + P(Bloom's/CMU) + T(시간) + C(Anti-Hallucination) + N(발화문 충실도/brainstorm 활용도) |
-| 8 | 통합 + 최종 검토 | review-agent | 블록별 독립 교안(`block_{block_id}.md`) 생성 + 구조 완전성(S) + 블록 간 전환 일관성 + SLO 커버리지 + 집계 정합 → `block_*.md` + `quality_review.md` |
+| 8 | 병합 + 최종 검토 | review-agent | **2단계 병합**: session_*.md → block_*.md (1차) → lecture_script.md (2차). 구조 완전성(S) + 블록 간 전환 일관성 + SLO 커버리지 + 집계 정합 → `block_*.md` + `lecture_script.md` + `quality_review.md` |
 
 **적용 프레임워크**:
 - Madeline Hunter 6단계 (직접교수법)
@@ -451,7 +451,7 @@ Step 0: 입력 로드 + 변경 불가 기준 확정
 
 상세 워크플로우: `.claude/agents/architecture-agent/AGENT.md` "강의교안 아키텍처 설계 (Phase 5) 세부 워크플로우" 섹션 참조
 
-#### Phase 6: 블록별 교안 작성 — full script + 강사대본
+#### Phase 6: 차시별 교안 작성 — Bottom-Up 3계층 + full script + 강사대본
 
 Phase 1~5 산출물을 통합하여 초보 강사가 교안+대본만 보고 강의 가능한 full_script(L5)를 생성합니다.
 
@@ -459,13 +459,15 @@ Phase 1~5 산출물을 통합하여 초보 강사가 교안+대본만 보고 강
 
 **2-레이어 분리**: 발화문(`> "..."`)과 행동 지시(`[...]`)를 시각적으로 구분하여 강사가 빠르게 발화/동작을 식별
 
-**동적 블록 분할**: architecture.md 시간표를 파싱하여 블록 경계를 동적 결정합니다.
+**동적 블록 분할 + 차시별 독립 파일**: architecture.md 시간표를 파싱하여 블록 경계를 동적 결정합니다.
 
 - 각 Day에 대해 30분+ 공백(점심 등) 탐색
 - `sessions_in_day ≥ 6 AND 공백 존재` → AM/PM 2블록 분할
 - 그 외 → Day 전체 1블록
 - 블록 ID: `D{day}_{AM|PM}` (분할 시) 또는 `D{day}` (미분할 시)
 - 교시 수 10개 초과 시 블록별 분할 작성 (`len(blocks) + 2` Part)
+- **산출물은 차시별 독립 파일**: `session_D{day}-{num}.md` (Phase 8에서 병합)
+- **파일명 3계층**: session (차시) → block (블록) → lecture_script (통합)
 
 **내용 충실화 규칙** (발화문 품질 기준):
 
@@ -474,7 +476,11 @@ Phase 1~5 산출물을 통합하여 초보 강사가 교안+대본만 보고 강
 - **어조**: 친절한 구어체(~해요, ~입니다), 딱딱한 문어체(~한다) 금지
 - **강사 발화 = 실제 대본**: `> "..."` 블록은 강사가 말할 내용 전체를 담는다
 
-**산출물 구조**: §1~§3 개요·목표·공통구조 + §4 차시별 교안 + §5~§6 형성평가·발문 집계 + §7~§8 참고자료·강사가이드
+**산출물 파일**:
+- `_header.md`: §1~§3 개요·목표·공통구조 (Part 0)
+- `session_D{day}-{num}.md`: 차시별 독립 교안 (Part 1~B, 각 차시 1파일)
+- `_footer.md`: §5~§8 형성평가·발문 집계·참고자료·강사가이드 (Part N)
+- Overlap 컨텍스트: 이전 블록 마지막 차시의 정리 섹션 참조로 차시 간 전환 일관성 보장
 
 상세 워크플로우: `.claude/agents/writer-agent/AGENT.md` "강의교안 작성 (Phase 6) 세부 워크플로우" 섹션 참조
 
@@ -496,15 +502,15 @@ Phase 6에서 결정한 블록 단위로 교안 품질을 검증하며, REVISION
 
 ```
 for block in blocks:
-    1. review-agent 호출 (블록 범위, ~42항목)
+    1. review-agent 호출 (해당 블록의 session_*.md 파일들, ~42항목)
        → _review_block_{block_id}.md
 
     2. 판정 추출
        → PASS / CONDITIONAL PASS → 다음 블록
        → REVISION_REQUIRED → 재작성 루프
 
-    3. [REVISION] writer-agent 재호출 (해당 블록만, revision 모드)
-       → lecture_script.md 내 해당 세션 Edit 교체
+    3. [REVISION] writer-agent 재호출 (해당 블록 차시만, revision 모드)
+       → 위반 session_D{day}-{num}.md 전체 Write 교체
 
     4. [REVISION] review-agent 재호출 (동일 블록)
        → 여전히 REVISION → 사용자 보고 후 중단
@@ -532,17 +538,23 @@ for block in blocks:
 
 상세 워크플로우: `.claude/agents/review-agent/AGENT.md` "강의교안 품질 검토 (Phase 7) 세부 워크플로우" 섹션 참조
 
-#### Phase 8: 통합 + 최종 검토 — 구조 완전성 + 블록 간 일관성
+#### Phase 8: 2단계 병합 + 최종 검토 — session→block→lecture_script 병합 + 구조 완전성 + 블록 간 일관성
 
 Phase 7 블록별 검토 완료 후, 전체 문서의 구조 완전성과 블록 간 일관성을 최종 검증합니다.
 
-**오케스트레이터 사전 처리 — 블록별 독립 교안 생성**:
+**오케스트레이터 사전 처리 — 2단계 병합** (방향 역전: 추출 → 병합):
 
-`lecture_script.md`에서 각 블록의 §4 세션들을 추출하여 블록별 독립 산출물을 생성합니다.
+Phase 6의 차시별 독립 파일을 블록 → 전체로 병합합니다.
 
-- 블록 ID 예시: `D1_AM`, `D1_PM`, `D2_AM`, `D2_PM`, ...
-- 각 `block_{block_id}.md`에는 블록 헤더 + 해당 세션 교안 + 블록 요약이 포함
+**1차 병합: session → block**:
+- 각 블록의 `session_D{day}-{num}.md` 파일들을 Read
+- Day 헤딩(`### Day {N}: {테마}`)을 삽입하고 세션들을 순서대로 결합
+- `block_D{day}_{AM|PM}.md`로 Write (블록 헤더 + 세션 교안 + 블록 요약)
 - 강사가 반일 단위(AM/PM)로 교안을 참조할 수 있는 독립 실행 문서
+
+**2차 병합: _header + block + _footer → lecture_script.md**:
+- `_header.md` (§1~§3) + `block_*.md` (§4 본문) + `_footer.md` (§5~§8)을 순서대로 결합
+- script-template.md 구조의 완전한 단일 `lecture_script.md` 생성
 
 **통합 검증 영역 (~15항목)**:
 
@@ -556,15 +568,16 @@ Phase 7 블록별 검토 완료 후, 전체 문서의 구조 완전성과 블록
 | 용어·표기 통일 | 전체 문서 일관성 |
 
 **산출물**:
-- `02_script/block_{block_id}.md` — 블록별 독립 교안 (예: `block_D1_AM.md`, `block_D1_PM.md`, ...) — 강사가 반일 단위로 사용
+- `02_script/block_D{day}_{AM|PM}.md` — 블록별 통합 교안 (1차 병합, 예: `block_D1_AM.md`, `block_D1_PM.md`, ...) — 강사가 반일 단위로 사용
+- `02_script/lecture_script.md` — 최종 통합 교안 (2차 병합) ★
 - `02_script/quality_review.md` — 최종 품질 검토 (§1 검토 요약 → §2 검증 상세 → §3 Major → §4 Minor → §5 우수 → §6 수정 우선순위 → §7 최종 판정)
 
 **데이터 흐름**:
 ```
 구성안 3파일 로드 → input_data.json → research_exploration.md → brainstorm_result.md
 → research_deep.md → [context7_reference.md] → architecture.md
-→ [블록별 작성] lecture_script.md → [블록별 검토] _review_block_*.md
-→ [통합] block_*.md + quality_review.md
+→ [차시별 작성] _header.md + session_*.md + _footer.md → [블록별 검토] _review_block_*.md
+→ [1차 병합] block_*.md → [2차 병합] lecture_script.md → [통합 검토] quality_review.md
 ```
 - `context7_reference.md`: Phase 5 오케스트레이터가 Context7 MCP로 사전 수집 (기술 교육 시에만 생성)
 - `_review_block_{block_id}.md`: Phase 7 블록별 검토 결과 (블록 수만큼 동적 생성)
@@ -658,11 +671,14 @@ lectures/
     │   ├── research_deep.md               # Phase 4 최종
     │   ├── [context7_reference.md]        # Phase 5 사전처리 (기술 교육 시)
     │   ├── architecture.md                # Phase 5 최종
-    │   ├── [context7_block_{block_id}.md] # Phase 6 블록별 정밀 기술 문서 (기술 교육, 블록 모드 시)
-    │   ├── lecture_script.md              # Phase 6 최종 ★
+    │   ├── _header.md                     # Phase 6 머리말 (§1~§3)
+    │   ├── session_D1-1.md ~ D{N}-{M}.md # Phase 6 차시별 독립 교안 ★
+    │   ├── _footer.md                     # Phase 6 꼬리말 (§5~§8)
+    │   ├── [context7_block_{block_id}.md] # Phase 6 블록별 정밀 기술 문서 (기술 교육 시)
     │   ├── [context7_verify_{block_id}.md]# Phase 7 블록별 코드 검증 기준 (기술 교육 시)
     │   ├── _review_block_{block_id}.md    # Phase 7 블록별 검토 결과 (동적)
-    │   ├── block_{block_id}.md            # Phase 8 블록별 독립 산출물 (동적)
+    │   ├── block_D{day}_{AM|PM}.md        # Phase 8 블록별 통합 (1차 병합) ★
+    │   ├── lecture_script.md              # Phase 8 최종 통합 (2차 병합) ★
     │   └── quality_review.md              # Phase 8 최종 ★
     │
     ├── 03_slide_plan/                     # /slide-planning 산출물 (미구현)

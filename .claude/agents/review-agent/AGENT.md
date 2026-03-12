@@ -421,7 +421,7 @@ Step 0: 입력 로드
 
 | 모드 | 범위 | 검증 영역 | 산출물 |
 |------|------|----------|--------|
-| **블록별 검토** | §4 중 특정 블록 세션 (3-4개 차시) | ~30항목 (G+P+T+C+N) | `_review_block_{block_id}.md` |
+| **블록별 검토** | 해당 블록의 `session_D*.md` 파일들 (3-4개 차시) | ~30항목 (G+P+T+C+N) | `_review_block_{block_id}.md` |
 | **통합 검토** | §1~§8 전체 (블록 검토 완료 후) | ~15항목 (S+블록간일관성) | `quality_review.md` |
 
 **모드 판별**: prompt에 "블록별 검토 모드" 키워드가 있으면 블록별 검토, "통합 검토 모드" 키워드가 있으면 통합 검토를 수행한다.
@@ -431,7 +431,7 @@ Step 0: 입력 로드
 블록 범위의 세션만 집중 검증한다. 구조 완전성(S-1~S-7)은 통합 검토에서 수행하므로 **생략**한다.
 
 **절차**:
-1. Step 0: 입력 로드 (기존과 동일, 단 lecture_script.md에서 해당 블록 세션만 집중)
+1. Step 0: 입력 로드 — 해당 블록의 `session_D{day}-{num}.md` 파일들을 Read (lecture_script.md 대신 차시 파일 직접 참조)
 2. Step 2: 교수설계 프레임워크 검증 (해당 블록 세션만, G-1~G-8)
 3. Step 3: 발문·평가·흐름 검증 (해당 블록 세션만, P-1~P-7)
 4. Step 4: 시간 배분 검증 (해당 블록 세션만, T-1~T-8)
@@ -446,8 +446,8 @@ Step 0: 입력 로드
 블록별 검토 완료 후, 전체 문서의 교차 일관성을 검증한다.
 
 **절차**:
-1. Step 0: 입력 로드 + `_review_block_*.md` 전부 Read
-2. Step 1: 구조 완전성 검증 (S-1~S-7)
+1. Step 0: 입력 로드 + `_review_block_*.md` 전부 Read + Phase 8에서 병합된 `lecture_script.md` Read
+2. Step 1: 구조 완전성 검증 (S-1~S-7) — 병합된 `lecture_script.md` 대상
 3. 블록 간 전환 일관성 검증: AM→PM, Day간 전환 문구 자연스러움
 4. SLO 커버리지 전체 확인: 모든 SLO가 §4에서 다뤄지는지
 5. 집계 정합 검증: §5 형성평가 집계 = §4 인라인 합계, §6 발문 모음 = §4 인라인 발문
@@ -513,7 +513,7 @@ Step 0: 입력 로드
 **동작**:
 
 0. `.claude/templates/input-schema-script.json` 읽기 — script_config 각 필드의 enum 값, 유효 범위를 사전 이해 (검증 기준 해석에 필요)
-1. `lecture_script.md` Read — 검증 대상
+1. 검증 대상 로드 — 블록별 검토: 해당 블록의 `session_D{day}-{num}.md` 파일들을 Read / 통합 검토: Phase 8 병합 후 `lecture_script.md` Read
 2. 교안 검증 기준 4개 파일 Read:
    - `{output_dir}/architecture.md`: 차시 내부 구조(Gagne/GRR/시간 블록), 형성평가 배치, 발문 수준 배정, 전환 설계
    - `{output_dir}/brainstorm_result.md`: 발문 텍스트, 활동 아이디어, 사례/훅, Gagne 구현 방안, 오개념
@@ -527,7 +527,7 @@ Step 0: 입력 로드
 
 | # | 파일 | 역할 | 검증 단계 |
 |---|------|------|----------|
-| 1 | `lecture_script.md` | **검증 대상** | Step 1~6 전체 |
+| 1 | `session_D{day}-{num}.md` (블록별 묶음) | **검증 대상** — 해당 블록의 차시 파일들을 Read | Step 2~6 (블록별 검토) |
 | 2 | `02_script/architecture.md` | Gagne/GRR/발문/전환 기준 | Step 2, 3, 4, 5 |
 | 3 | `02_script/brainstorm_result.md` | 발문/활동/사례/오개념 원본 | Step 5, 6 |
 | 4 | `02_script/research_deep.md` | 소재/미해결 항목 기준 | Step 5, 6 |
@@ -751,7 +751,7 @@ Step 0: 입력 로드
 | 항목 | 값 |
 |------|-----|
 | 검토 일자 | {date} |
-| 검토 대상 | lecture_script.md (Phase 6 산출물) |
+| 검토 대상 | 블록별: session_D*.md (Phase 6 산출물) / 통합: lecture_script.md (Phase 8 병합 산출물) |
 | 검토 기준 | Gagne 9사태 + GRR + Bloom's 발문 + CMU 3점 형성평가 + 시간 배분 + Anti-Hallucination + 교안 실행 품질 |
 | 검증 항목 수 | 49개 (S:7 + G:8 + P:7 + T:8 + C:10 + N:9) |
 | 판정 | {PASS / CONDITIONAL PASS / REVISION REQUIRED} |
