@@ -39,3 +39,4 @@ lectures/
    - `/slide-generation` → `03_slide_plan/slide_plan.md` 참조
 3. **중간 산출물 보존**: 각 Phase의 중간 산출물도 해당 폴더에 저장 (디버깅·재실행 용도)
 4. **input_data.json**: 각 워크플로우 폴더에 독립적으로 생성 (워크플로우별 입력이 다름)
+5. **차시별 중간 산출물**: `/lecture-script` Phase 6은 차시별 독립 파일(`session_D{day}-{num}.md`)로 작성 후 Phase 8에서 블록(`block_D{day}_{AM|PM}.md`) → 최종(`lecture_script.md`)으로 병합
