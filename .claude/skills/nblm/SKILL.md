@@ -532,6 +532,112 @@ npm install
 npm run install-browsers
 ```
 
+### Browser Libraries & Architecture
+
+이 스킬은 **2개의 브라우저 자동화 라이브러리**를 역할에 따라 분리 사용한다.
+
+| 라이브러리 | 런타임 | 버전 | 역할 |
+|-----------|--------|------|------|
+| **agent-browser** | Node.js (npm) | 0.5.0 | 헤드리스 Chromium 데몬, NotebookLM 페이지 조작, 파일 업로드 폴백 |
+| **Patchright** | Python (pip) | 1.50.0+ | Google 인증 전용 (anti-detection Playwright fork) |
+| playwright-core | Node.js | (agent-browser 하위 의존성) | 브라우저 제어 엔진 |
+
+**역할 분담 원칙**:
+- **API 우선**: 모든 NotebookLM 작업은 `notebooklm-py` API로 먼저 시도
+- **agent-browser 폴백**: API 실패 시 브라우저 자동화로 전환 (쿼리, 파일 업로드)
+- **Patchright 전용**: Google 인증만 담당 (Google이 Chrome for Testing을 차단하므로 anti-detection 필수)
+
+### run.py 자동 설정 흐름
+
+`python scripts/run.py <script>.py [args]` 실행 시 자동 수행되는 단계:
+
+```
+1. _detect_owner_pid()
+   → 부모 프로세스 체인 추적 (최대 20단계)
+   → Claude Code 에이전트 PID 감지 → AGENT_BROWSER_OWNER_PID 설정
+
+2. ensure_venv()
+   → .venv 없으면: venv.create() + pip install -r requirements.txt
+
+3. ensure_pip_deps()
+   → requirements.txt 해시 비교 → 변경 시 pip install
+   → _ensure_patchright_browser() → patchright install chromium
+     (마커 파일: .patchright-browser-installed)
+
+4. ensure_node_deps()
+   → npm install (agent-browser + playwright-core + ws + zod)
+
+5. ensure_google_auth()
+   → data/auth/google/ 확인 + notebooklm_updated_at 10일 TTL 검증
+   → 만료/미존재 시 브라우저 열어 수동 Google 로그인 유도
+
+6. subprocess.run([venv_python, script] + args)
+```
+
+### 프로세스 생명주기
+
+```
+run.py
+  └─ subprocess.Popen(node_modules/agent-browser/dist/daemon.js)
+       └─ headless Chromium 실행
+       └─ listen: /tmp/agent-browser-notebooklm.sock (Unix socket)
+            ↕ JSON line protocol
+       agent_browser_client.py (Python 클라이언트)
+
+daemon_watchdog.py (백그라운드 subprocess)
+  └─ 30초 간격 감시
+  └─ 10분 idle 또는 owner 프로세스 종료 시 → daemon 자동 종료
+```
+
+### 환경변수
+
+| 변수 | 기본값 | 용도 |
+|------|--------|------|
+| `AGENT_BROWSER_SESSION` | `"notebooklm"` | Unix socket 파일명 (`/tmp/agent-browser-{session}.sock`) |
+| `AGENT_BROWSER_OWNER_PID` | (자동감지) | daemon watchdog 종료 조건 |
+| `NOTEBOOKLM_HOME` | `data/auth` | notebooklm-py storage 경로 |
+| `NOTEBOOKLM_AUTH_TOKEN` | (선택) | API 직접 인증 (데몬 우회) |
+| `NOTEBOOKLM_COOKIES` | (선택) | API 직접 인증 (데몬 우회) |
+
+### 쿼리 실행 흐름 (ask_question.py)
+
+```
+1차 시도: notebooklm-py API (NotebookLMWrapper)
+  └─ 성공 → 즉시 반환
+
+2차 시도: agent-browser 브라우저 폴백
+  ├─ AgentBrowserClient("notebooklm") 연결
+  ├─ daemon.js 시작 (필요 시)
+  ├─ auth 복원 (storage_state.json → cookies + localStorage)
+  ├─ navigate(notebook_url)
+  ├─ snapshot() → find query box → fill(question) → press Enter
+  ├─ wait_for_answer (120초 타임아웃, 안정성 3회 확인)
+  └─ 답변 추출 후 반환
+```
+
+### 인증 구조 (다중 Google 계정)
+
+```
+data/auth/google/
+├── index.json                    # active_account, accounts[]
+├── 0-user1@gmail.com.json        # cookies, origins, csrf_token, session_id
+└── 1-user2@gmail.com.json        # notebooklm_updated_at (TTL 10일)
+```
+
+- **인증 방식**: Patchright로 브라우저 열어 수동 Google 로그인
+- **토큰 추출**: `window.WIZ_global_data?.SNlM0e` (CSRF token)
+- **신선도**: `notebooklm_updated_at` 기준 10일 TTL → 만료 시 자동 재인증 유도
+- **일일 제한**: 계정당 50쿼리 → `accounts add`로 다중계정 추가하여 우회
+
+### Lecture Factory 워크플로우 내 활용
+
+| Phase | 워크플로우 | NBLM 쿼리 제한 | 산출물 |
+|-------|-----------|---------------|--------|
+| Phase 2 (탐색 리서치) | `/lecture-outline`, `/lecture-script` | 노트북당 5회 | `nblm_findings.md` |
+| Phase 4 (심화 리서치) | `/lecture-outline`, `/lecture-script` | 5회 + 삼각검증 5회 | `research_deep.md` |
+
+3자료원 통합 구조: `로컬 참고자료 + NotebookLM + 웹 검색 → research_exploration.md`
+
 ## Data Storage
 
 All data stored in `~/.claude/skills/notebooklm/data/`:
