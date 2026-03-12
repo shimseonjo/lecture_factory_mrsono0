@@ -219,22 +219,47 @@ prompt: |
    - `source_outline.outline_path`, `source_outline.architecture_path`, `source_outline.outline_input_path` 추출
 2. `{output_dir}/brainstorm_result.md` 존재 확인
 3. `{output_dir}/research_deep.md` 존재 확인
-4. **Context7 기술 문서 수집** (기술 교육인 경우):
+4. **content_type 기반 context7 필수 판별**:
+   - 구성안 `architecture.md` §4-2에서 모든 차시의 content_type 추출
+   - `hands_on_count` = content_type == "hands-on"인 차시 수
+   - `has_tech_keywords` = `input_data.json`의 `keywords[]`에 기술 라이브러리 1개 이상
+   - **context7 필수**: `hands_on_count >= 1 AND has_tech_keywords == true`
+   - **context7 선택**: `hands_on_count == 0 AND has_tech_keywords == true`
+   - **context7 불필요**: `has_tech_keywords == false`
+
+5. **Context7 기술 문서 수집** (context7 필수/선택 시):
    - `input_data.json`의 `keywords[]` + `topic`에서 기술 키워드 추출
-   - 구성안 `architecture.md` §4-2의 하위 주제명에서 라이브러리/도구 이름 추출
+   - 구성안 `architecture.md` §4-2의 content_type == "hands-on" 차시의 하위 주제명에서 라이브러리/도구 이름 추출
    - 추출된 각 라이브러리에 대해:
-     - `resolve-library-id`(libraryName=라이브러리명, query=강의 주제 영문 요약)로 Context7 ID 조회
-     - 유효한 ID가 있으면 `query-docs`(libraryId=Context7_ID, query=영어_기술_키워드)로 문서 수집
-       - **query 작성 가이드**: 차시별 하위 주제에서 핵심 기술 키워드를 영어로 추출하여 구체적으로 작성
-       - 좋은 예: `"dependency injection @Autowired configuration"`, `"REST controller request mapping"`
-       - 나쁜 예: `"스프링부트 의존성 주입"` (한국어), `"setup"` (너무 짧음)
-       - 차시별로 다른 query를 사용하여 세부 주제에 맞는 문서를 정밀 수집
+     a. `resolve-library-id`(libraryName=라이브러리명)로 Context7 ID 조회
+     b. 유효한 ID가 있으면 `query-docs`(libraryId=Context7_ID, query=영어_기술_키워드)로 문서 수집
+        - **query 작성 가이드**: hands-on 차시별 하위 주제에서 핵심 기술 키워드를 영어로 추출
+        - 좋은 예: `"dependency injection @Autowired configuration"`, `"REST controller request mapping"`
+        - 나쁜 예: `"스프링부트 의존성 주입"` (한국어), `"setup"` (너무 짧음)
+        - 차시별로 다른 query를 사용하여 세부 주제에 맞는 문서를 정밀 수집
+     c. **실패 시 폴백 (최대 2회 retry)**:
+        - 1차 실패: 동일 라이브러리에 대해 query를 단순화하여 재시도
+        - 2차 실패: WebSearch + WebFetch로 공식 문서 직접 수집 (핵심 API 3~5개)
+        - 폴백 결과도 context7_reference.md에 `[폴백: 웹 검색]` 태그와 함께 기록
    - 수집 결과를 `{output_dir}/context7_reference.md`에 저장:
      - **§1 Library ID Cache**: `| 라이브러리 | Context7 ID | 버전 |` 테이블 (Phase 6, 7에서 재사용)
      - **§2 라이브러리별 문서**: API 목록, 코드 예제, 버전 정보, 관련 차시 태깅
-   - keywords에 라이브러리가 없으면 이 단계 스킵
    - Context7에 미등록 라이브러리(`resolve-library-id` 결과 없음)는 WebSearch + WebFetch로 공식 문서 직접 수집 (핵심 3~5개)
-   - **제약**: 라이브러리 최대 5개, 라이브러리당 `query-docs` 최대 5회
+   - **제약**: 라이브러리 최대 5개, 라이브러리당 `query-docs` 최대 5회, WebSearch 폴백 최대 5회
+
+6. **context7 필수인데 수집 전체 실패 시** (파이프라인 중단 방지):
+   - `hands_on_count >= 1`인데 context7 + 웹 폴백 모두 실패하여 기술 문서 0건인 경우:
+   - `context7_reference.md`를 최소 골격으로 생성:
+     ```
+     # Context7 Reference (폴백)
+     ## §1 Library ID Cache
+     | 라이브러리 | Context7 ID | 상태 |
+     | {라이브러리명} | — | 수집 실패 |
+     ## §2 수집 결과
+     수집 실패. writer-agent는 공식 문서 URL을 기반으로 코드를 작성해야 한다.
+     ## §3 폴백 지침
+     - hands-on 차시 목록: {D1-2, D1-4, ...}
+     ```
 
 **Agent 호출**:
 
@@ -268,6 +293,34 @@ prompt: |
 1. `{output_dir}/architecture.md` 존재 확인 (Glob)
 2. Read로 architecture.md 로드 → §8 검증 결과 섹션에서 6항목 모두 "Pass" 확인
 3. §3 차시별 내부 구조에서 Gagne 체크 값이 모든 차시에서 7/9 이상인지 확인
+
+**GATE-5** (모든 항목 PASS 시에만 Phase 6 진행):
+
+| ID | 검증 내용 | 방법 | 기준 | 실패 시 |
+|----|----------|------|------|--------|
+| G5-1 | `architecture.md` 존재 | Glob `{output_dir}/architecture.md` | 1개 | 중단 |
+| G5-2 | §8 검증 결과 6항목 Pass | Read architecture.md §8 | 전체 Pass | 중단 |
+| G5-3 | Gagne 체크 ≥ 7/9 | Read architecture.md §3 | 모든 차시 ≥ 7/9 | 중단 |
+| G5-4 | content_type 필수 context7 검증 | 아래 로직 | 조건부 | 조건부 중단 |
+
+**G5-4 상세 로직**:
+```
+hands_on_sessions = architecture.md §4-2에서 content_type == "hands-on"인 차시 목록
+if len(hands_on_sessions) >= 1:
+    if NOT Glob("{output_dir}/context7_reference.md"):
+        → G5-4 FAIL: "hands-on 차시 {N}개 존재하나 context7_reference.md 미생성"
+        → 중단
+    else:
+        context7 = Read context7_reference.md
+        if "수집 실패" in context7 §2:
+            → G5-4 CONDITIONAL PASS: "context7 수집 실패 — 폴백 모드"
+        else:
+            → G5-4 PASS
+else:
+    → G5-4 PASS (자동 — hands-on 없음)
+```
+
+**GATE-5 전체 통과 → Phase 6 진행 허용**
 
 ### Phase 6: 블록별 교안 작성 → writer-agent (full script + 강사대본)
 
@@ -307,6 +360,12 @@ prompt: |
   - {output_dir}/input_data.json
   - {output_dir}/context7_reference.md (존재 시)
 
+  **content_type 정보**:
+  - hands-on 차시: {hands_on_sessions 목록}
+  - concept 차시: {concept_sessions 목록}
+  - activity 차시: {activity_sessions 목록}
+  - **hands-on 차시에서는 I Do에 fenced code block 필수**
+
   **스키마 참조**: `.claude/templates/input-schema-script.json` (script_config 필드 의미·유효값 이해용)
   **템플릿**: `.claude/templates/script-template.md`
   **산출물**: `{output_dir}/lecture_script.md`
@@ -324,12 +383,15 @@ prompt: |
 - Part 1~{B}/{N}: `범위: §4 블록 {block_id} ({session_list})`, `산출물: session_D{day}-{num}.md × 세션 수` (각각 Write 신규)
 - Part {N}/{N}: `범위: §5~§8`, `산출물: _footer.md` (Write 신규)
 
-**블록별 Context7 보강 쿼리** (블록별 분할 모드 + 기술 교육인 경우):
+**블록별 Context7 보강 쿼리** (블록별 분할 모드):
 
 각 블록(Part 1~{B}) writer-agent 호출 **직전에** 오케스트레이터가 수행:
 
+**스킵 판단**: 해당 블록에 content_type == "hands-on" 차시가 0개이면 이 블록의 context7 보강 스킵.
+
 1. `context7_reference.md` §1 Library ID Cache에서 캐시된 libraryId 조회
-2. `architecture.md` §3에서 해당 블록 세션들의 기술 키워드 추출 (하위 주제명, 다루는 API/도구)
+   - `context7_reference.md` 미존재 시: 이 블록에 hands-on 차시가 있으면 경고 출력 후 WebSearch 폴백으로 진행
+2. `architecture.md` §3에서 해당 블록의 **hands-on 세션들의** 기술 키워드 추출 (하위 주제명, 다루는 API/도구)
 3. 각 키워드에 대해 `query-docs`(libraryId, query=영어_기술_키워드) 호출
    - query 작성: Phase 5와 동일 가이드 — 구체적 영어 기술 키워드
    - 예: 블록 D1_AM에 "Spring Boot project setup" 세션이 있으면 `query="spring initializr project structure dependencies"`
@@ -339,7 +401,7 @@ prompt: |
 
 **제약**:
 - 블록당 `query-docs` 최대 2회, Phase 6 전체 최대 12회
-- `context7_reference.md` 미존재(비기술 교육)이면 이 단계 전체 스킵
+- 해당 블록에 hands-on 차시 0개이면 스킵
 - 단일 모드(`total_sessions ≤ 10`)에서는 Phase 5의 `context7_reference.md`로 충분하므로 스킵
 
 ```
@@ -363,6 +425,12 @@ prompt: |
   - {output_dir}/input_data.json
   - {output_dir}/context7_reference.md (존재 시)
   - {output_dir}/context7_block_{block_id}.md (존재 시 — 블록별 정밀 기술 문서)
+
+  **블록 내 content_type 분포**:
+  - 이 블록의 hands-on 차시: {해당 블록의 hands-on 세션 목록}
+  - 이 블록의 concept 차시: {해당 블록의 concept 세션 목록}
+  - 이 블록의 activity 차시: {해당 블록의 activity 세션 목록}
+  - **hands-on 차시에서는 I Do에 fenced code block 필수**
 
   **스키마 참조**: `.claude/templates/input-schema-script.json` (script_config 필드 의미·유효값 이해용)
   **템플릿**: `.claude/templates/script-template.md`
@@ -403,8 +471,9 @@ prompt: |
 
 #### Step 7-1: 블록별 사전 처리 (Context7 검증 기준 수집)
 
-기술 교육인 경우 (`context7_reference.md` 존재 시):
-1. 해당 블록의 `session_D{day}-{num}.md` 파일들에서 코드 블록(``` 구간) 추출
+해당 블록에 content_type == "hands-on" 차시가 1개 이상인 경우:
+1. 해당 블록의 hands-on `session_D{day}-{num}.md` 파일들에서 코드 블록(``` 구간) 추출
+   - **코드 블록 0개인 hands-on 차시 발견 시**: 즉시 경고 플래그 설정 (Step 7-2 review-agent에 전달)
 2. 코드에 사용된 주요 API/함수명 식별 (import문, 함수 호출, 클래스명 등)
 3. `context7_reference.md` §1 Library ID Cache에서 대응 libraryId 조회
 4. `query-docs`(libraryId, query="함수명 signature parameters usage") 호출
@@ -414,7 +483,8 @@ prompt: |
    - 불일치 플래그 (있으면)
 6. **제약**: 블록당 `query-docs` 최대 1회, Phase 7 전체 최대 6회
 
-`context7_reference.md` 미존재(비기술 교육) 시 Step 7-1 스킵 → Step 7-2로 직행.
+해당 블록에 content_type == "hands-on" 차시가 0개이면 Step 7-1 스킵 → Step 7-2로 직행.
+`context7_reference.md` 미존재 + hands-on 차시 있음: `context7_verify_{block_id}.md`에 "검증 기준 없음" 기록 후 Step 7-2 진행.
 
 #### Step 7-2: review-agent 호출 + 산출물 즉시 확인
 
