@@ -23,6 +23,16 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/scripts/session-wrap-new-check.sh"
+          }
+        ]
+      }
     ]
   }
 }
