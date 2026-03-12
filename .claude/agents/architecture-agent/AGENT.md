@@ -2,7 +2,7 @@
 name: architecture-agent
 description: 아키텍처 설계 에이전트. 구조 설계, 정렬 맵, Backward Design을 적용하여 전체 프레임을 설계합니다.
 tools: Read, Write
-model: sonnet
+model: opus 4.6
 ---
 
 # Architecture Agent
