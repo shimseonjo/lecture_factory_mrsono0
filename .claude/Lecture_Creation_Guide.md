@@ -482,7 +482,7 @@ Phase 1~5 산출물을 통합하여 초보 강사가 교안+대본만 보고 강
 - `_footer.md`: §5~§8 형성평가·발문 집계·참고자료·강사가이드 (Part N)
 - Overlap 컨텍스트: 이전 블록 마지막 차시의 정리 섹션 참조로 차시 간 전환 일관성 보장
 
-상세 워크플로우: `.claude/agents/writer-agent/AGENT.md` "강의교안 작성 (Phase 6) 세부 워크플로우" 섹션 참조
+상세 워크플로우: `.claude/agents/writer-agent/AGENT.md` 라우팅 → `script-write.md` 참조
 
 #### Phase 7: 블록별 품질 검토 — 블록 단위 검증 + 재작성 루프
 

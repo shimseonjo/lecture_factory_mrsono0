@@ -352,7 +352,7 @@ prompt: |
   이전 Phase 산출물을 통합하여 강의교안(full script)을 작성하세요.
 
   **지시사항**: `.claude/agents/writer-agent/AGENT.md`를 읽고
-  "강의교안 작성 (Phase 6) 세부 워크플로우" 섹션의 Step 0~5를 실행하세요.
+  라우팅에 따라 `script-write.md`를 로드하여 Step 0~5를 실행하세요.
 
   **입력**:
   - {output_dir}/architecture.md
@@ -413,7 +413,7 @@ prompt: |
   이전 Phase 산출물을 통합하여 강의교안(full script)을 작성하세요.
 
   **지시사항**: `.claude/agents/writer-agent/AGENT.md`를 읽고
-  "강의교안 작성 (Phase 6) 세부 워크플로우" 섹션을 따르세요.
+  라우팅에 따라 `script-write.md`를 로드하여 따르세요.
 
   **모드**: part ({K}/{N})
   **범위**: §4 블록 {block_id} ({session_list})
@@ -548,7 +548,7 @@ prompt: |
   블록 {block_id}의 Major 위반을 수정하여 해당 세션만 재작성하세요.
 
   **지시사항**: `.claude/agents/writer-agent/AGENT.md`를 읽고
-  "강의교안 작성 (Phase 6) 세부 워크플로우" 섹션의 **revision 모드**를 따르세요.
+  라우팅에 따라 `script-write.md`를 로드하여 **revision 모드**를 따르세요.
 
   **모드**: revision
   **범위**: 블록 {block_id} ({session_list})
