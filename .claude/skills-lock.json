@@ -20,6 +20,21 @@
       "source": "langchain-ai/deepagents",
       "sourceType": "github",
       "computedHash": "270afdc15791178ca2215c8f01845cf212302dd64c8ab366f4059ea00b45283f"
+    },
+    "history-insight": {
+      "source": "team-attention/plugins-for-claude-natives",
+      "sourceType": "github",
+      "computedHash": "02e7898447f6f51d7a69f4e9b985f90525c2cbd1f13ab76a3b50ab36122768fe"
+    },
+    "session-analyzer": {
+      "source": "team-attention/plugins-for-claude-natives",
+      "sourceType": "github",
+      "computedHash": "ce0f8fb3faa381e800defd14d19c0513e0873f29170c45a52217e524d7d98d1b"
+    },
+    "session-wrap": {
+      "source": "team-attention/plugins-for-claude-natives",
+      "sourceType": "github",
+      "computedHash": "ad70140fe68b77d630057bbbcf12ad53c1bac601376f4fbf02386c6f36781dbb"
     }
   }
 }

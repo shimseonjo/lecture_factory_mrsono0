@@ -12,5 +12,17 @@
       "mcp__filesystem__list_directory",
       "mcp__filesystem__directory_tree"
     ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/scripts/session-wrap-check.sh"
+          }
+        ]
+      }
+    ]
   }
 }
