@@ -33,6 +33,35 @@ $ARGUMENTS
 
 ---
 
+### [CRITICAL] 필수 실행 규칙
+
+> **이 규칙은 Phase 1~8 전체에 적용되며, 어떠한 예외도 허용하지 않는다.**
+
+1. **순차 실행 필수**: Phase N이 완료(GATE 통과)되기 전에 Phase N+1을 시작할 수 없다.
+2. **Phase 병합 금지**: 두 개 이상의 Phase를 하나의 Agent 호출로 합쳐서 실행하지 않는다.
+   - 금지 예: "Phase 7과 8을 한 번에 처리", "검토와 병합을 동시에"
+3. **Sub-step 생략 금지**: Phase 내의 번호가 매겨진 Step(예: Step 7-1, 7-2, 7-3)은 모두 실행한다.
+   - 금지 예: "블록이 1개이므로 검토 생략", "이전에 확인했으므로 GATE 스킵"
+4. **GATE CHECK 필수**: GATE 테이블이 있는 Phase는 모든 항목이 PASS여야 다음으로 진행한다.
+   - GATE 실패 시: 해당 Phase에서 중단하고 실패 원인을 사용자에게 보고한다.
+   - GATE를 "대략 확인" 또는 "요약 확인"으로 대체할 수 없다 — 각 항목을 개별 검증한다.
+5. **블록 전수 처리**: `blocks[]` 배열의 모든 블록에 대해 동일한 처리를 수행한다.
+   - 금지 예: "대표 블록 1개만 검토", "나머지는 유사하므로 생략"
+
+**GATE CHECK 프로토콜**:
+```
+for each gate_item in GATE_TABLE:
+    result = 검증 실행 (Glob / Read / Grep)
+    if result == FAIL:
+        → 실패 항목·원인 출력
+        → 해당 Phase 중단
+        → 사용자에게 보고
+if all gate_items == PASS:
+    → 다음 Phase 진행 허용
+```
+
+---
+
 ### Phase 1: 입력 수집
 
 **Agent 호출**:
@@ -347,12 +376,21 @@ prompt: |
 2. 각 `session_*.md` Read → Gagne 체크 ≥ 7/9 확인
 3. 각 `session_*.md`의 시간 합산이 배정 시간과 일치 확인
 
-**최종 완료 확인** (전체 Part 완료 후):
-1. `{output_dir}/_header.md` + `{output_dir}/_footer.md` 존재 확인 (Glob)
-2. Glob `{output_dir}/session_D*.md` → 모든 세션 파일 존재 확인 (`sessions[]` 배열과 대조)
-3. 각 `session_*.md` Read → Gagne 체크 값이 모든 차시에서 7/9 이상 확인
+**GATE-6** (전체 Part 완료 후 — 모든 항목 PASS 시에만 Phase 7 진행):
+
+| ID | 검증 내용 | 방법 | 기준 | 실패 시 |
+|----|----------|------|------|--------|
+| G6-1 | `_header.md` 존재 | Glob `{output_dir}/_header.md` | 1개 | 중단 |
+| G6-2 | `_footer.md` 존재 | Glob `{output_dir}/_footer.md` | 1개 | 중단 |
+| G6-3 | `session_D*.md` 파일 수 == len(sessions[]) | Glob `{output_dir}/session_D*.md` + 카운트 | 일치 | 중단 |
+| G6-4 | 각 session Gagne 체크 ≥ 7/9 | Read 각 `session_*.md` | ≥ 7/9 | 중단 |
+| G6-5 | 각 session 시간 합산 == 배정 시간 | Read 각 `session_*.md` | 일치 | 중단 |
+
+**GATE-6 전체 통과 → Phase 7 진행 허용**
 
 ### Phase 7: 블록별 품질 검토 → review-agent (블록 범위 검증 + 재작성 루프)
+
+> **[MANDATORY] `blocks[]` 배열의 모든 블록에 대해 Step 7-1 → 7-2 → 7-3을 전수 실행한다. 블록 생략 불가.**
 
 **사전 처리** (오케스트레이터 수행):
 
@@ -361,35 +399,27 @@ prompt: |
 3. `{output_dir}/input_data.json` Read → `source_outline.outline_path`, `source_outline.architecture_path` 추출
 4. Phase 6에서 결정한 `blocks[]`, `sessions[]` 배열 재사용
 
-**블록별 검토 루프** (오케스트레이터가 `blocks[]`를 순회):
+**블록별 검토 루프** (오케스트레이터가 `blocks[]`의 **각 블록**에 대해 순차 실행):
 
-```
-for block in blocks:
-    # 0. Context7 코드 검증 사전 처리 (기술 교육인 경우)
-    if context7_reference.md 존재:
-        lecture_script.md에서 해당 블록의 코드 블록(``` 구간) 추출
-        코드에 사용된 주요 API/함수명 식별 (import문, 함수 호출, 클래스명 등)
-        context7_reference.md §1 Library ID Cache에서 대응 libraryId 조회
-        query-docs(libraryId, query="함수명 signature parameters usage") 호출
-        결과를 {output_dir}/context7_verify_{block_id}.md에 저장:
-          - 검증 대상 코드 블록 목록
-          - API별 공식 시그니처 (파라미터 타입, 반환 타입)
-          - 불일치 플래그 (있으면)
-        제약: 블록당 query-docs 최대 1회, Phase 7 전체 최대 6회
+#### Step 7-1: 블록별 사전 처리 (Context7 검증 기준 수집)
 
-    # 1. review-agent 호출 (블록 범위)
-    Agent 호출 (아래 prompt)
+기술 교육인 경우 (`context7_reference.md` 존재 시):
+1. 해당 블록의 `session_D{day}-{num}.md` 파일들에서 코드 블록(``` 구간) 추출
+2. 코드에 사용된 주요 API/함수명 식별 (import문, 함수 호출, 클래스명 등)
+3. `context7_reference.md` §1 Library ID Cache에서 대응 libraryId 조회
+4. `query-docs`(libraryId, query="함수명 signature parameters usage") 호출
+5. 결과를 `{output_dir}/context7_verify_{block_id}.md`에 저장:
+   - 검증 대상 코드 블록 목록
+   - API별 공식 시그니처 (파라미터 타입, 반환 타입)
+   - 불일치 플래그 (있으면)
+6. **제약**: 블록당 `query-docs` 최대 1회, Phase 7 전체 최대 6회
 
-    # 2. _review_block_{block_id}.md Read → 판정 추출
+`context7_reference.md` 미존재(비기술 교육) 시 Step 7-1 스킵 → Step 7-2로 직행.
 
-    # 3. REVISION_REQUIRED인 경우 (최대 1회 재시도)
-    if 판정 == "REVISION_REQUIRED":
-        writer-agent 호출 (revision 모드, 해당 블록만 재작성)
-        review-agent 재호출 (동일 블록)
-        if 여전히 REVISION_REQUIRED → 사용자에게 보고 후 중단
-```
+#### Step 7-2: review-agent 호출 + 산출물 즉시 확인
 
-**블록별 review-agent 호출**:
+review-agent를 호출하고, 반환 후 `_review_block_{block_id}.md` 존재를 **즉시** Glob으로 확인한다.
+파일이 없으면 해당 블록에서 중단하고 사용자에게 보고한다.
 
 ```
 subagent_type: review-agent
@@ -430,6 +460,13 @@ prompt: |
   **제약**: 도구 Read, Write만 사용. 외부 검색 없음. Agent 중첩 금지.
 ```
 
+#### Step 7-3: 판정 분기
+
+1. `_review_block_{block_id}.md` Read → 판정 결과 추출
+2. **PASS 또는 CONDITIONAL PASS** → 다음 블록으로 진행
+3. **REVISION_REQUIRED** → writer-agent 재작성 1회 → review-agent 재검토 1회:
+   - 재검토 후에도 REVISION_REQUIRED → 사용자에게 보고 후 **중단**
+
 **REVISION_REQUIRED 시 재작성 호출**:
 
 ```
@@ -456,32 +493,59 @@ prompt: |
   **제약**: 해당 블록의 위반 차시만 수정. 다른 차시 파일 수정 금지. Agent 중첩 금지.
 ```
 
-**블록별 완료 확인**:
-1. `_review_block_{block_id}.md` 존재 확인
-2. 판정 결과 추출 → REVISION이면 재작성 루프 (최대 1회)
+#### GATE-7 (모든 블록 완료 후 — 전체 통과 시에만 Phase 8 진행)
 
-**Phase 7 전체 완료 확인**:
-모든 블록이 PASS 또는 CONDITIONAL PASS → Phase 8 진행
+| ID | 검증 내용 | 방법 | 기준 | 실패 시 |
+|----|----------|------|------|--------|
+| G7-1 | `_review_block_*.md` 파일 수 == len(blocks[]) | Glob + 카운트 | 일치 | 중단 |
+| G7-2 | 각 판정 != REVISION_REQUIRED | Read 각 `_review_block_*.md` | 전체 PASS 또는 CONDITIONAL | 중단 |
+| G7-3 | blocks[] 전체 블록 ID가 파일명에 매칭 | Glob 패턴 대조 | 전체 일치 | 중단 |
+
+**GATE-7 전체 통과 → Phase 8 진행 허용**
 
 ---
 
 ### Phase 8: 통합 + 최종 검토 → review-agent (구조 완전성 + 블록 간 일관성)
 
-**사전 처리 — 2단계 병합** (오케스트레이터가 직접 수행):
+> **[MANDATORY] Step 8-1 → 8-2 → 8-3 순서 실행, 생략 불가. 각 Step의 GATE를 통과해야 다음 Step 진행.**
 
-1. 모든 `_review_block_*.md` Read → 블록별 판정 요약 수집
-2. **1차 병합: session → block** (오케스트레이터가 직접 Read+Write):
-   - 각 블록에 대해 해당 `session_D{day}-{num}.md` 파일들을 Read
-   - Day 헤딩(`### Day {N}: {테마}`)을 삽입하고 세션들을 순서대로 결합
-   - `block_D{day}_{AM|PM}.md`로 Write (블록 헤더 + 세션 교안 + 블록 요약)
-3. **2차 병합: _header + block + _footer → lecture_script.md** (오케스트레이터가 직접 Read+Write):
-   - `_header.md` Read → 상단 (메타데이터 + §1~§3 + §4 Day 헤딩 골격)
-   - `block_*.md` 파일들을 블록 순서대로 Read → §4 본문
-   - `_footer.md` Read → 하단 (§5~§8)
-   - `lecture_script.md`에 Write — script-template.md 구조의 완전한 단일 문서
-4. `{output_dir}/lecture_script.md` Read → §1~§8 전체 존재 확인
+**사전 처리** (오케스트레이터 수행):
+- 모든 `_review_block_*.md` Read → 블록별 판정 요약 수집
 
-**통합 검토 Agent 호출**:
+#### Step 8-1: 1차 병합 (session → block)
+
+오케스트레이터가 직접 Read+Write로 수행:
+1. 각 블록에 대해 해당 `session_D{day}-{num}.md` 파일들을 Read
+2. Day 헤딩(`### Day {N}: {테마}`)을 삽입하고 세션들을 순서대로 결합
+3. `block_D{day}_{AM|PM}.md`로 Write (블록 헤더 + 세션 교안 + 블록 요약)
+
+**GATE-8-1**:
+
+| ID | 검증 내용 | 방법 | 기준 | 실패 시 |
+|----|----------|------|------|--------|
+| G8-1a | `block_*.md` 파일 수 == len(blocks[]) | Glob + 카운트 | 일치 | 중단 |
+| G8-1b | 각 block 파일 비어있지 않음 | Read 각 `block_*.md` | 내용 존재 | 중단 |
+
+**GATE-8-1 실패 → Step 8-2 진행 불가**
+
+#### Step 8-2: 2차 병합 (block → lecture_script.md)
+
+오케스트레이터가 직접 Read+Write로 수행:
+1. `_header.md` Read → 상단 (메타데이터 + §1~§3 + §4 Day 헤딩 골격)
+2. `block_*.md` 파일들을 블록 순서대로 Read → §4 본문
+3. `_footer.md` Read → 하단 (§5~§8)
+4. `lecture_script.md`에 Write — script-template.md 구조의 완전한 단일 문서
+
+**GATE-8-2**:
+
+| ID | 검증 내용 | 방법 | 기준 | 실패 시 |
+|----|----------|------|------|--------|
+| G8-2a | `lecture_script.md` 존재 | Glob `{output_dir}/lecture_script.md` | 1개 | 중단 |
+| G8-2b | §1~§8 헤더 존재 | Grep `lecture_script.md`에서 `§1`~`§8` 패턴 | 8개 섹션 헤더 | 중단 |
+
+**GATE-8-2 실패 → Step 8-3 진행 불가**
+
+#### Step 8-3: 통합 검토 (review-agent)
 
 ```
 subagent_type: review-agent
@@ -522,15 +586,18 @@ prompt: |
   **제약**: 도구 Read, Write만 사용. 외부 검색 없음. Agent 중첩 금지.
 ```
 
-**완료 확인**:
-1. `{output_dir}/quality_review.md` 존재 확인 (Glob)
-2. `{output_dir}/block_*.md` 파일들 존재 확인 (블록 수만큼)
-3. `{output_dir}/lecture_script.md` 존재 확인 (2차 병합 결과)
-4. Read `quality_review.md` → 판정 결과 추출 (PASS / CONDITIONAL PASS / REVISION REQUIRED)
-5. 판정에 따라 후속 조치 안내:
-   - **PASS**: "교안 품질 검토 통과. lecture_script.md가 확정되었습니다."
-   - **CONDITIONAL PASS**: "Minor 위반 {N}개 발견. quality_review.md를 확인하여 부분 수정을 권고합니다."
-   - **REVISION REQUIRED**: "Major 위반 {N}개 발견. quality_review.md의 수정 가이드에 따라 해당 섹션을 재작성해야 합니다."
+**GATE-8-3**:
+
+| ID | 검증 내용 | 방법 | 기준 | 실패 시 |
+|----|----------|------|------|--------|
+| G8-3a | `quality_review.md` 존재 | Glob `{output_dir}/quality_review.md` | 1개 | 중단 |
+| G8-3b | 판정 결과 추출 가능 | Read `quality_review.md` → 판정 추출 | PASS/CONDITIONAL/REVISION 중 하나 | 중단 |
+| G8-3c | `block_*.md` 파일 존재 유지 | Glob `{output_dir}/block_*.md` | len(blocks[])개 | 중단 |
+
+**GATE-8-3 통과 후 판정에 따라 후속 조치 안내**:
+- **PASS**: "교안 품질 검토 통과. lecture_script.md가 확정되었습니다."
+- **CONDITIONAL PASS**: "Minor 위반 {N}개 발견. quality_review.md를 확인하여 부분 수정을 권고합니다."
+- **REVISION REQUIRED**: "Major 위반 {N}개 발견. quality_review.md의 수정 가이드에 따라 해당 섹션을 재작성해야 합니다."
 
 ## 산출물 (02_script/)
 
