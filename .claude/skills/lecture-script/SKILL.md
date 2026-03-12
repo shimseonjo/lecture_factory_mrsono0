@@ -71,7 +71,7 @@ if all gate_items == PASS:
 ```
 강의교안 워크플로우의 입력을 수집하세요.
 
-**지시사항**: `.claude/agents/input-agent/AGENT.md`를 읽고 "강의교안 입력 수집 (S0~S6)" 섹션을 따르세요.
+**지시사항**: `.claude/agents/input-agent/AGENT.md`를 읽고 라우팅에 따라 `script-input.md`를 로드하여 따르세요.
 
 **핵심 원칙**:
 - Step 0: lectures/ 스캔 → 구성안 폴더 선택 → 3개 파일 로드

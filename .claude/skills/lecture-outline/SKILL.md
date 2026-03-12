@@ -42,7 +42,7 @@ $ARGUMENTS
 ```
 강의구성안 워크플로우의 입력을 수집하세요.
 
-**지시사항**: `.claude/agents/input-agent/AGENT.md`를 읽고 "강의구성안 입력 수집 (Q1~Q14)" 섹션을 따르세요.
+**지시사항**: `.claude/agents/input-agent/AGENT.md`를 읽고 라우팅에 따라 `outline-input.md`를 로드하여 따르세요.
 
 **폴더 생성**: Q1 응답을 받은 즉시 다음 폴더를 생성하세요:
 - `lectures/{today}_{강의명}/01_outline/`
@@ -301,7 +301,7 @@ Phase 7 종료. 사용자에게 검토 요약을 보고한다:
 
 ### Phase 1: 입력 수집 → input-agent
 
-**상세**: `.claude/agents/input-agent/AGENT.md`의 "강의구성안 입력 수집 (Q1~Q14)" 섹션 참조
+**상세**: `.claude/agents/input-agent/AGENT.md` 라우팅 → `outline-input.md` 참조
 
 ### Phase 2: 탐색적 리서치 → research-agent
 
