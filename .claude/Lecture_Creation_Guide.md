@@ -449,7 +449,7 @@ Step 0: 입력 로드 + 변경 불가 기준 확정
 
 **산출물**: `02_script/architecture.md` (§1~§9: 변경 불가 기준 요약, 교수 모델 설계, 차시별 내부 구조, 형성평가 배치, 발문 수준, 전환 설계, 기술 문서 참조, 검증 결과, 설계 결정 로그)
 
-상세 워크플로우: `.claude/agents/architecture-agent/AGENT.md` "강의교안 아키텍처 설계 (Phase 5) 세부 워크플로우" 섹션 참조
+상세 워크플로우: `.claude/agents/architecture-agent/AGENT.md` 라우팅 → `script-architecture.md` 참조
 
 #### Phase 6: 차시별 교안 작성 — Bottom-Up 3계층 + full script + 강사대본
 
