@@ -339,8 +339,9 @@ else:
    - `sessions[]` 배열 생성: 전체 교시 목록 (각 세션에 `{session_id, day, num, block_id}` 포함)
    - 세션 ID: `D{day}-{num}` (예: D1-1, D1-2, ..., D3-8)
 3. **분할 판단**:
-   - `total_sessions ≤ 10` → 단일 모드
+   - `total_sessions ≤ 10` → 단일 모드 (writer-agent 1회 호출, 산출물 형식은 블록 모드와 동일)
    - `total_sessions > 10` → 블록별 분할 (`total_parts = len(blocks) + 2`)
+   - **공통**: 두 모드 모두 `_header.md` + `session_D*.md` + `_footer.md` 생성. GATE-6 → Phase 7 → Phase 8 동일 적용.
 4. `{output_dir}/architecture.md` Read → §8 검증 결과 6항목 Pass 재확인
 
 **단일 모드 Agent 호출** (total_sessions ≤ 10):
@@ -351,7 +352,7 @@ prompt: |
   이전 Phase 산출물을 통합하여 강의교안(full script)을 작성하세요.
 
   **지시사항**: `.claude/agents/writer-agent/AGENT.md`를 읽고
-  "강의교안 작성 (Phase 6) 세부 워크플로우" 섹션의 Step 0~6을 실행하세요.
+  "강의교안 작성 (Phase 6) 세부 워크플로우" 섹션의 Step 0~5를 실행하세요.
 
   **입력**:
   - {output_dir}/architecture.md
@@ -368,7 +369,9 @@ prompt: |
 
   **스키마 참조**: `.claude/templates/input-schema-script.json` (script_config 필드 의미·유효값 이해용)
   **템플릿**: `.claude/templates/script-template.md`
-  **산출물**: `{output_dir}/lecture_script.md`
+  **모드**: single (전체 차시 1회 호출)
+  **산출물 방식**: 차시별 독립 파일 Write (Bottom-Up 3계층 — 블록 모드와 동일)
+  **산출물**: `{output_dir}/_header.md`, `{output_dir}/session_D{day}-{num}.md` × 세션 수, `{output_dir}/_footer.md`
 
   **제약**: 도구 Read, Write, Glob만 사용. 외부 검색 없음. Agent 중첩 금지.
 ```
@@ -494,7 +497,7 @@ review-agent를 호출하고, 반환 후 `_review_block_{block_id}.md` 존재를
 ```
 subagent_type: review-agent
 prompt: |
-  lecture_script.md의 블록 {block_id} 세션들의 품질을 검토하세요.
+  블록 {block_id} 세션들의 품질을 검토하세요.
 
   **지시사항**: `.claude/agents/review-agent/AGENT.md`를 읽고
   "강의교안 품질 검토 (Phase 7) 세부 워크플로우" 섹션의
@@ -518,11 +521,11 @@ prompt: |
 
   **산출물**: `{output_dir}/_review_block_{block_id}.md`
 
-  **검증 영역 (블록 범위, ~42항목)**:
+  **검증 영역 (블록 범위, ~44항목)**:
   1. 교수설계 프레임워크 (G-1~G-8): Gagne 9사태, GRR 4단계, 2-레이어, Think-Aloud, 15분 분절
   2. 발문/평가/흐름 (P-1~P-7): Bloom's 발문 수준, CMU 3점, 차시 간 전환
   3. 시간 배분 (T-1~T-8): 교시 시간 합산, 비율 준수, GRR 시간, 시간큐
-  4. 콘텐츠 정확성 (C-1~C-10): Anti-Hallucination, CLO/SLO 일치, 소재 근거, 코드 API 정확성(C-10, context7_verify 존재 시만)
+  4. 콘텐츠 정확성 (C-1~C-12): Anti-Hallucination, CLO/SLO 일치, 소재 근거, 코드 API 정확성(C-10), 코드 콘텐츠 밀도(C-11), 플레이스홀더 잔존(C-12)
   5. 교안 실행 품질 (N-1~N-9): 발화문 자연성, 활동 3요소
 
   **판정 기준**: PASS (Major=0, Minor≤3) / CONDITIONAL PASS (Major=0, Minor≥4) / REVISION REQUIRED (Major≥1)
