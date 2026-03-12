@@ -369,7 +369,7 @@ Step 0: 입력 로드
 
 1. **구성안 Phase 7 패턴 재사용**: 점진적 Write(중간 파일 → 통합), 인용 규칙(기대값/실제값/수정가이드), 3단계 판정(PASS/CONDITIONAL PASS/REVISION REQUIRED)
 2. **교안 고유 검증 영역 독립 분리**: Gagne 9사태, GRR 4단계, 2-레이어 표기법, Think-Aloud 4대 패턴, CMU 3점 형성평가 배치, 15분 분절 규칙
-3. **48개 항목, 6개 영역**: 핵심에 집중하되 교수법 검증을 충분히 커버
+3. **49개 항목, 6개 영역**: 핵심에 집중하되 교수법 검증을 충분히 커버
 4. **자동 판별 기준**: "Gagne 체크 ≥7/9", "I Do ≤15분", "time_ratio ±5%" 등 정량적 기준 최대화
 5. **가중치 미적용**: 6개 영역 모두 "강사가 교안만으로 수업 진행 가능한가"에 수렴. Major/Minor 분류로 충분
 
@@ -381,7 +381,7 @@ Step 0: 입력 로드
 | 검증 기준 파일 수 | 4개 | 6개 (+구성안 2파일) |
 | 핵심 분량 | §5 교시당 10~15줄 | §4 교시당 80~120줄, 전체 4,000~6,000행 |
 | 고유 검증 영역 | 없음 | Gagne, GRR, 2-레이어, Think-Aloud, CMU 3점, 15분 분절, 발화문 자연성 |
-| 검증 항목 수 | 38개 (S:6 + L:5 + A:5 + F:4 + T:7 + C:11) | **48개** (S:7 + G:8 + P:7 + T:8 + C:9 + N:9) |
+| 검증 항목 수 | 38개 (S:6 + L:5 + A:5 + F:4 + T:7 + C:11) | **49개** (S:7 + G:8 + P:7 + T:8 + C:10 + N:9) |
 | Step 수 | Step 0~5 (6단계) | Step 0~7 (8단계) |
 
 ### 전체 흐름
@@ -404,7 +404,7 @@ Step 0: 입력 로드
   ├── Step 4: 시간 배분 현실성 검증 (T-1~T-8, 8항목)
   │   └── Write → _review_step4.md
   │
-  ├── Step 5: 콘텐츠 정확성 검증 — Anti-Hallucination (C-1~C-9, 9항목)
+  ├── Step 5: 콘텐츠 정확성 검증 — Anti-Hallucination (C-1~C-10, 10항목)
   │   └── Write → _review_step5.md
   │
   ├── Step 6: 교안 실행 품질 검증 — 발화문/활동지시/강사가이드 (N-1~N-9, 9항목)
@@ -413,7 +413,7 @@ Step 0: 입력 로드
   └── Step 7: Read _review_step1~6.md → 통합 판정 → Write quality_review.md
 ```
 
-**점진적 Write 패턴**: Step 1~6 각각의 검증 결과를 중간 파일로 Write한 뒤, Step 7에서 Read하여 통합한다. 7개 입력 파일 + 48개 검증 결과를 동시에 메모리에 유지하는 부담을 줄여 정확도를 높인다.
+**점진적 Write 패턴**: Step 1~6 각각의 검증 결과를 중간 파일로 Write한 뒤, Step 7에서 Read하여 통합한다. 7개 입력 파일 + 49개 검증 결과를 동시에 메모리에 유지하는 부담을 줄여 정확도를 높인다.
 
 ### 검토 모드
 
@@ -435,7 +435,7 @@ Step 0: 입력 로드
 2. Step 2: 교수설계 프레임워크 검증 (해당 블록 세션만, G-1~G-8)
 3. Step 3: 발문·평가·흐름 검증 (해당 블록 세션만, P-1~P-7)
 4. Step 4: 시간 배분 검증 (해당 블록 세션만, T-1~T-8)
-5. Step 5: 콘텐츠 정확성 검증 (해당 블록 세션만, C-1~C-9)
+5. Step 5: 콘텐츠 정확성 검증 (해당 블록 세션만, C-1~C-10)
 6. Step 6: 교안 실행 품질 검증 (해당 블록 세션만, N-1~N-9)
 7. 블록 판정 통합 → `_review_block_{block_id}.md`에 Write
 
@@ -670,7 +670,7 @@ Step 0: 입력 로드
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | lecture_script.md, 02_script/architecture.md, 02_script/brainstorm_result.md, 02_script/research_deep.md, 02_script/input_data.json, 01_outline/lecture_outline.md, 01_outline/architecture.md |
+| 입력 | lecture_script.md, 02_script/architecture.md, 02_script/brainstorm_result.md, 02_script/research_deep.md, 02_script/input_data.json, 01_outline/lecture_outline.md, 01_outline/architecture.md, context7_verify_{block_id}.md (존재 시 — 코드 API 검증 기준) |
 | 도구 | Read, Write |
 | 산출물 | `{output_dir}/_review_step5.md` |
 
@@ -687,8 +687,9 @@ Step 0: 입력 로드
 | 7 | C-7 | 미해결 항목 반영 | research_deep §3-3의 미해결 항목이 §8-5 사전 확인 필요 항목에 반영 | Minor (누락) |
 | 8 | C-8 | 참고자료 출처 일치 | §7-2 필수 참고자료의 출처가 research_deep 또는 brainstorm_result의 출처 목록에 존재 | Minor (새로 추가된 출처) |
 | 9 | C-9 | 실습 환경 반영 | input_data.json lab_environment가 non-null일 때: §4 실습 교시의 필요 자료에 해당 도구/환경 명시, §8-5 사전 확인 필요 항목에 환경 설정 절차 포함 | Major (lab_environment 존재 시 실습 교시에 도구 미명시), Minor (§8-5 환경 설정 누락) |
+| 10 | C-10 | 코드 예제 API 정확성 | `context7_verify_{block_id}.md` 존재 시만 적용. §4 코드 블록의 함수명·파라미터·반환 타입이 공식 문서와 일치. 비기술 교육(`context7_verify` 미존재): 자동 Pass | Major (존재하지 않는 API 호출 — 함수명 자체가 공식 문서에 없음), Minor (파라미터 순서/타입 차이, deprecated API 사용) |
 
-**동작**: C-1~C-9 검증 결과를 `_review_step5.md`에 Write한다.
+**동작**: C-1~C-10 검증 결과를 `_review_step5.md`에 Write한다.
 
 ---
 
@@ -752,7 +753,7 @@ Step 0: 입력 로드
 | 검토 일자 | {date} |
 | 검토 대상 | lecture_script.md (Phase 6 산출물) |
 | 검토 기준 | Gagne 9사태 + GRR + Bloom's 발문 + CMU 3점 형성평가 + 시간 배분 + Anti-Hallucination + 교안 실행 품질 |
-| 검증 항목 수 | 48개 (S:7 + G:8 + P:7 + T:8 + C:9 + N:9) |
+| 검증 항목 수 | 49개 (S:7 + G:8 + P:7 + T:8 + C:10 + N:9) |
 | 판정 | {PASS / CONDITIONAL PASS / REVISION REQUIRED} |
 
 ---
@@ -765,22 +766,22 @@ Step 0: 입력 로드
 | 교수설계 프레임워크 (G) | 8 | {N} | {N} | {N} |
 | 발문·평가·흐름 (P) | 7 | {N} | {N} | {N} |
 | 시간 배분 현실성 (T) | 8 | {N} | {N} | {N} |
-| 콘텐츠 정확성 (C) | 9 | {N} | {N} | {N} |
+| 콘텐츠 정확성 (C) | 10 | {N} | {N} | {N} |
 | 교안 실행 품질 (N) | 9 | {N} | {N} | {N} |
-| **합계** | **48** | {N} | {N} | {N} |
+| **합계** | **49** | {N} | {N} | {N} |
 
 ---
 
 ## 2. 검증 상세
 
-48개 검증 항목 전체의 Pass/Fail 결과를 기록한다.
+49개 검증 항목 전체의 Pass/Fail 결과를 기록한다.
 
 | # | 검증 ID | 영역 | 결과 | 상세 |
 |---|---------|------|------|------|
 | 1 | S-1 | 구조 완전성 | {Pass/Major/Minor} | {검증 결과 요약} |
 | 2 | S-2 | 구조 완전성 | {Pass/Major/Minor} | {검증 결과 요약} |
 | ... | ... | ... | ... | ... |
-| 48 | N-9 | 교안 실행 품질 | {Pass/Major/Minor} | {검증 결과 요약} |
+| 49 | N-9 | 교안 실행 품질 | {Pass/Major/Minor} | {검증 결과 요약} |
 
 ---
 
@@ -832,7 +833,7 @@ Step 0: 입력 로드
 **판정 근거**:
 - Major 위반: {N}개
 - Minor 위반: {N}개
-- 총 검증 항목: 48개 중 Pass {N}개
+- 총 검증 항목: 49개 중 Pass {N}개
 
 {CONDITIONAL PASS인 경우}:
 **권고 수정 사항**: §6 수정 우선순위 순서대로 Minor 위반을 수정한 뒤 재검토 권장.

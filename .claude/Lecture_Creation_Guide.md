@@ -425,7 +425,7 @@ Step 0: 입력 로드 + 변경 불가 기준 확정
 
 **Context7 기술 문서 통합** (오케스트레이터 사전 처리):
 - `input_data.json`의 keywords + 구성안 차시 하위 주제에서 라이브러리 자동 추출
-- Context7 MCP(`resolve-library-id` → `get-library-docs`)로 최신 문서/코드 예제 수집
+- Context7 MCP(`resolve-library-id` → `query-docs`)로 최신 문서/코드 예제 수집
 - `context7_reference.md`에 저장 → architecture-agent가 §3 차시별 내부 구조의 `기술 참조` 컬럼으로 배정
 - 기술 교육이 아닌 경우 자동 스킵
 
@@ -741,7 +741,7 @@ lectures/
 | **2-레이어 분리 표기법** | 교안 Phase 6 | 발화문(`> "..."`) vs 행동 지시(`[...]`) 시각 구분 — 강사가 발화/동작을 즉시 식별 가능한 실행 문서 포맷 |
 | **brainstorm 소재 필수 통합** | 교안 Phase 6 | brainstorm_result.md §1~§6 소재를 레이블이 아닌 발화문으로 통합 — 사례는 스토리텔링, 비유는 풀어쓰기, Gagne 방안은 자연 반영 |
 | **발화문 내용 충실화 + 구어체** | 교안 Phase 6-7 | 분량 제한 없음, GRR 구간별 내용 품질 기준. 친절한 구어체(~해요, ~입니다), 문어체(~한다) 금지. brainstorm 소재 50%+ 미활용 시 Major |
-| **Context7 MCP 기술 문서 통합** | 교안 Phase 5-6 | 라이브러리 자동 판별 → resolve-library-id → get-library-docs → 최신 문서/코드 예제 수집 |
+| **Context7 MCP 기술 문서 통합** | 교안 Phase 5-6-7 | 라이브러리 자동 판별 → resolve-library-id → query-docs → 최신 문서/코드 예제 수집 |
 | **Assertion-Evidence** | 슬라이드 | 주장 제목 + 시각 증거 (불릿포인트 대체) |
 
 ---

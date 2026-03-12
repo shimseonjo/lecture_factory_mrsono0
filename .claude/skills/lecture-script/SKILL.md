@@ -194,12 +194,18 @@ prompt: |
    - `input_data.json`의 `keywords[]` + `topic`에서 기술 키워드 추출
    - 구성안 `architecture.md` §4-2의 하위 주제명에서 라이브러리/도구 이름 추출
    - 추출된 각 라이브러리에 대해:
-     - `resolve-library-id`(라이브러리명)로 Context7 ID 조회
-     - 유효한 ID가 있으면 `get-library-docs`(library_id, topic=차시별_하위_주제)로 문서 수집
-   - 수집 결과를 `{output_dir}/context7_reference.md`에 저장 (라이브러리별 → API 목록, 코드 예제, 버전 정보, 관련 차시 태깅)
+     - `resolve-library-id`(libraryName=라이브러리명, query=강의 주제 영문 요약)로 Context7 ID 조회
+     - 유효한 ID가 있으면 `query-docs`(libraryId=Context7_ID, query=영어_기술_키워드)로 문서 수집
+       - **query 작성 가이드**: 차시별 하위 주제에서 핵심 기술 키워드를 영어로 추출하여 구체적으로 작성
+       - 좋은 예: `"dependency injection @Autowired configuration"`, `"REST controller request mapping"`
+       - 나쁜 예: `"스프링부트 의존성 주입"` (한국어), `"setup"` (너무 짧음)
+       - 차시별로 다른 query를 사용하여 세부 주제에 맞는 문서를 정밀 수집
+   - 수집 결과를 `{output_dir}/context7_reference.md`에 저장:
+     - **§1 Library ID Cache**: `| 라이브러리 | Context7 ID | 버전 |` 테이블 (Phase 6, 7에서 재사용)
+     - **§2 라이브러리별 문서**: API 목록, 코드 예제, 버전 정보, 관련 차시 태깅
    - keywords에 라이브러리가 없으면 이 단계 스킵
-   - Context7에 미등록 라이브러리는 WebSearch + WebFetch로 공식 문서 직접 수집 (핵심 3~5개)
-   - **제약**: 라이브러리 최대 5개, 라이브러리당 get-library-docs 최대 3회
+   - Context7에 미등록 라이브러리(`resolve-library-id` 결과 없음)는 WebSearch + WebFetch로 공식 문서 직접 수집 (핵심 3~5개)
+   - **제약**: 라이브러리 최대 5개, 라이브러리당 `query-docs` 최대 5회
 
 **Agent 호출**:
 
@@ -286,6 +292,24 @@ prompt: |
 - Part 1~{B}/{N}: `범위: §4 블록 {block_id} ({session_list})`, `동작: Read 기존 + append`
 - Part {N}/{N}: `범위: §5~§8`, `동작: Read 기존 + append`
 
+**블록별 Context7 보강 쿼리** (블록별 분할 모드 + 기술 교육인 경우):
+
+각 블록(Part 1~{B}) writer-agent 호출 **직전에** 오케스트레이터가 수행:
+
+1. `context7_reference.md` §1 Library ID Cache에서 캐시된 libraryId 조회
+2. `architecture.md` §3에서 해당 블록 세션들의 기술 키워드 추출 (하위 주제명, 다루는 API/도구)
+3. 각 키워드에 대해 `query-docs`(libraryId, query=영어_기술_키워드) 호출
+   - query 작성: Phase 5와 동일 가이드 — 구체적 영어 기술 키워드
+   - 예: 블록 D1_AM에 "Spring Boot project setup" 세션이 있으면 `query="spring initializr project structure dependencies"`
+4. 수집 결과를 `{output_dir}/context7_block_{block_id}.md`에 저장
+   - 구조: 블록 ID, 대상 세션 목록, 라이브러리별 쿼리 결과 (API 시그니처, 코드 스니펫, 관련 문서)
+5. writer-agent 호출 prompt의 입력에 추가
+
+**제약**:
+- 블록당 `query-docs` 최대 2회, Phase 6 전체 최대 12회
+- `context7_reference.md` 미존재(비기술 교육)이면 이 단계 전체 스킵
+- 단일 모드(`total_sessions ≤ 10`)에서는 Phase 5의 `context7_reference.md`로 충분하므로 스킵
+
 ```
 subagent_type: writer-agent
 prompt: |
@@ -305,6 +329,7 @@ prompt: |
   - {output_dir}/research_deep.md
   - {output_dir}/input_data.json
   - {output_dir}/context7_reference.md (존재 시)
+  - {output_dir}/context7_block_{block_id}.md (존재 시 — 블록별 정밀 기술 문서)
 
   **스키마 참조**: `.claude/templates/input-schema-script.json` (script_config 필드 의미·유효값 이해용)
   **템플릿**: `.claude/templates/script-template.md`
@@ -335,6 +360,18 @@ prompt: |
 
 ```
 for block in blocks:
+    # 0. Context7 코드 검증 사전 처리 (기술 교육인 경우)
+    if context7_reference.md 존재:
+        lecture_script.md에서 해당 블록의 코드 블록(``` 구간) 추출
+        코드에 사용된 주요 API/함수명 식별 (import문, 함수 호출, 클래스명 등)
+        context7_reference.md §1 Library ID Cache에서 대응 libraryId 조회
+        query-docs(libraryId, query="함수명 signature parameters usage") 호출
+        결과를 {output_dir}/context7_verify_{block_id}.md에 저장:
+          - 검증 대상 코드 블록 목록
+          - API별 공식 시그니처 (파라미터 타입, 반환 타입)
+          - 불일치 플래그 (있으면)
+        제약: 블록당 query-docs 최대 1회, Phase 7 전체 최대 6회
+
     # 1. review-agent 호출 (블록 범위)
     Agent 호출 (아래 prompt)
 
@@ -366,6 +403,7 @@ prompt: |
   - `{output_dir}/brainstorm_result.md` (발문/활동/사례/오개념 원본)
   - `{output_dir}/research_deep.md` (확보된 소재, 미해결 항목)
   - `{output_dir}/input_data.json` (교수 모델, 시간 비율, 설정값)
+  - `{output_dir}/context7_verify_{block_id}.md` (존재 시 — 코드 API 공식 시그니처 검증 기준)
 
   **검증 기준 (구성안)**:
   - `{source_outline.outline_path}` (CLO/SLO 원본)
@@ -375,11 +413,11 @@ prompt: |
 
   **산출물**: `{output_dir}/_review_block_{block_id}.md`
 
-  **검증 영역 (블록 범위, ~41항목)**:
+  **검증 영역 (블록 범위, ~42항목)**:
   1. 교수설계 프레임워크 (G-1~G-8): Gagne 9사태, GRR 4단계, 2-레이어, Think-Aloud, 15분 분절
   2. 발문/평가/흐름 (P-1~P-7): Bloom's 발문 수준, CMU 3점, 차시 간 전환
   3. 시간 배분 (T-1~T-8): 교시 시간 합산, 비율 준수, GRR 시간, 시간큐
-  4. 콘텐츠 정확성 (C-1~C-9): Anti-Hallucination, CLO/SLO 일치, 소재 근거
+  4. 콘텐츠 정확성 (C-1~C-10): Anti-Hallucination, CLO/SLO 일치, 소재 근거, 코드 API 정확성(C-10, context7_verify 존재 시만)
   5. 교안 실행 품질 (N-1~N-9): 발화문 자연성, 활동 3요소
 
   **판정 기준**: PASS (Major=0, Minor≤3) / CONDITIONAL PASS (Major=0, Minor≥4) / REVISION REQUIRED (Major≥1)
@@ -493,6 +531,8 @@ lectures/YYYY-MM-DD_{강의명}/02_script/
 ├── context7_reference.md        # Phase 5: 기술 문서 참조 (오케스트레이터 사전 수집, 기술 교육 시)
 ├── architecture.md              # Phase 5: 교안 구조 설계
 ├── lecture_script.md            # Phase 6: 전체 교안 (교안+강사대본) ★
+├── context7_block_{block_id}.md # Phase 6: 블록별 정밀 기술 문서 (동적 생성, 기술 교육 시)
+├── context7_verify_{block_id}.md # Phase 7: 블록별 코드 검증 기준 (동적 생성, 기술 교육 시)
 ├── _review_block_{block_id}.md  # Phase 7: 블록별 검토 결과 (블록 수만큼 동적 생성)
 ├── block_{block_id}.md          # Phase 8: 블록별 독립 산출물 (블록 수만큼 동적 생성)
 └── quality_review.md            # Phase 8: 최종 품질 검토 ★
