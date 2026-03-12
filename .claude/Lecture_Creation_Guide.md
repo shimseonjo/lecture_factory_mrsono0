@@ -212,7 +212,7 @@ Phase 5(아키텍처 설계)에서 일별 시간표를 자동 생성하여 Phase
 | 5 | 교안 구조 설계 | architecture-agent | 교수 모델별 도입-전개-정리 비율, Gagne 9사태 적용, SLO별 형성평가 배정, 시간 배분 |
 | 6 | 블록별 교안 작성 | writer-agent | 동적 블록 분할 + full_script(L5) 완전 스크립트 — 교안(학습 내용) + 강사대본(발화문) + 발문 + 활동 + 평가문항. brainstorm 소재 필수 통합, 친절한 구어체 |
 | 7 | 블록별 품질 검토 | review-agent | 블록 단위 6영역 검증 루프 — REVISION_REQUIRED 시 해당 블록만 재작성(최대 1회). G(Gagne/GRR) + P(Bloom's/CMU) + T(시간) + C(Anti-Hallucination) + N(발화문 충실도/brainstorm 활용도) |
-| 8 | 통합 + 최종 검토 | review-agent | 블록 독립 산출물 생성 + 구조 완전성(S) + 블록 간 전환 일관성 + SLO 커버리지 + 집계 정합 → quality_review.md |
+| 8 | 통합 + 최종 검토 | review-agent | 블록별 독립 교안(`block_{block_id}.md`) 생성 + 구조 완전성(S) + 블록 간 전환 일관성 + SLO 커버리지 + 집계 정합 → `block_*.md` + `quality_review.md` |
 
 **적용 프레임워크**:
 - Madeline Hunter 6단계 (직접교수법)
@@ -490,6 +490,7 @@ Phase 6에서 결정한 블록 단위로 교안 품질을 검증하며, REVISION
 | 검증 항목 수 | 38개 (6영역) | ~42개 (5영역: G+P+T+C+N) | ~15개 (S+일관성) |
 | Step 수 | Step 0~5 | 블록 수만큼 반복 | 1회 |
 | 재작성 | 없음 | REVISION 시 writer-agent 재호출 (최대 1회) | 없음 |
+| 산출물 | `quality_review.md` | `_review_block_{block_id}.md` | `block_{block_id}.md` (블록별 독립 교안) + `quality_review.md` |
 
 **블록별 검토 루프**:
 
@@ -535,8 +536,13 @@ for block in blocks:
 
 Phase 7 블록별 검토 완료 후, 전체 문서의 구조 완전성과 블록 간 일관성을 최종 검증합니다.
 
-**오케스트레이터 사전 처리**:
-- 각 블록의 §4 세션들을 `lecture_script.md`에서 추출 → `block_{block_id}.md`로 독립 산출물 생성
+**오케스트레이터 사전 처리 — 블록별 독립 교안 생성**:
+
+`lecture_script.md`에서 각 블록의 §4 세션들을 추출하여 블록별 독립 산출물을 생성합니다.
+
+- 블록 ID 예시: `D1_AM`, `D1_PM`, `D2_AM`, `D2_PM`, ...
+- 각 `block_{block_id}.md`에는 블록 헤더 + 해당 세션 교안 + 블록 요약이 포함
+- 강사가 반일 단위(AM/PM)로 교안을 참조할 수 있는 독립 실행 문서
 
 **통합 검증 영역 (~15항목)**:
 
@@ -549,7 +555,9 @@ Phase 7 블록별 검토 완료 후, 전체 문서의 구조 완전성과 블록
 | 발문 모음 정합 | §6 발문 = §4 인라인 발문 |
 | 용어·표기 통일 | 전체 문서 일관성 |
 
-**산출물**: `02_script/quality_review.md` (§1 검토 요약 → §2 검증 상세 → §3 Major → §4 Minor → §5 우수 → §6 수정 우선순위 → §7 최종 판정)
+**산출물**:
+- `02_script/block_{block_id}.md` — 블록별 독립 교안 (예: `block_D1_AM.md`, `block_D1_PM.md`, ...) — 강사가 반일 단위로 사용
+- `02_script/quality_review.md` — 최종 품질 검토 (§1 검토 요약 → §2 검증 상세 → §3 Major → §4 Minor → §5 우수 → §6 수정 우선순위 → §7 최종 판정)
 
 **데이터 흐름**:
 ```
