@@ -168,7 +168,12 @@ mv skills-lock.json .claude/skills-lock.json   # 또는 수동 병합 후 삭제
 
 ### 설치 후 정리
 
-`npx skills add --copy`는 `.agent/`, `.agents/`, `.continue/`, `.kiro/`, `.windsurf/` 등 외부 에이전트 폴더도 자동 생성한다. 이 폴더들은 `.gitignore`에 등록되어 있으므로 커밋되지 않지만, 불필요 시 삭제해도 무방하다.
+`npx skills add --copy`는 `.agent/`, `.agents/`, `.continue/`, `.kiro/`, `.windsurf/` 등 외부 에이전트 폴더도 자동 생성한다. 이 폴더들은 `.gitignore`에 등록되어 있으므로 커밋되지 않지만, **스킬 설치 완료 후 반드시 삭제**한다.
+
+```bash
+# 스킬 설치 후 자동 생성된 외부 폴더 삭제 (필수)
+rm -rf .agent .agents .continue .kiro .windsurf
+```
 
 ### 금지 패턴
 
