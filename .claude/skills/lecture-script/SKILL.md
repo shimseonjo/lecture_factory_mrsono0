@@ -13,7 +13,7 @@ $ARGUMENTS
 
 ## 오케스트레이터 실행 로직
 
-**당신은 7단계 파이프라인의 오케스트레이터다.** 직접 콘텐츠를 작성하지 않는다. 각 Phase를 Agent 도구로 전담 에이전트에 위임하고, Phase 간 데이터 흐름을 관리한다.
+**당신은 8단계 파이프라인의 오케스트레이터다.** 직접 콘텐츠를 작성하지 않는다. 각 Phase를 Agent 도구로 전담 에이전트에 위임하고, Phase 간 데이터 흐름을 관리한다.
 
 ### Step 0: 초기화
 
@@ -375,12 +375,12 @@ prompt: |
 
   **산출물**: `{output_dir}/_review_block_{block_id}.md`
 
-  **검증 영역 (블록 범위, ~30항목)**:
+  **검증 영역 (블록 범위, ~41항목)**:
   1. 교수설계 프레임워크 (G-1~G-8): Gagne 9사태, GRR 4단계, 2-레이어, Think-Aloud, 15분 분절
   2. 발문/평가/흐름 (P-1~P-7): Bloom's 발문 수준, CMU 3점, 차시 간 전환
   3. 시간 배분 (T-1~T-8): 교시 시간 합산, 비율 준수, GRR 시간, 시간큐
-  4. 콘텐츠 정확성 (C-1~C-8): Anti-Hallucination, CLO/SLO 일치, 소재 근거
-  5. 교안 실행 품질 (N-1~N-7): 발화문 자연성, 활동 3요소
+  4. 콘텐츠 정확성 (C-1~C-9): Anti-Hallucination, CLO/SLO 일치, 소재 근거
+  5. 교안 실행 품질 (N-1~N-9): 발화문 자연성, 활동 3요소
 
   **판정 기준**: PASS (Major=0, Minor≤3) / CONDITIONAL PASS (Major=0, Minor≥4) / REVISION REQUIRED (Major≥1)
 
