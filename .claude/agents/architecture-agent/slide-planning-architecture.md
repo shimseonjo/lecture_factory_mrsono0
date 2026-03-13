@@ -80,7 +80,7 @@ Step 0: 입력 로드 + 변경 불가 기준 확정
 
 4. **brainstorm_result.md에서 추출**:
    - §1: 세션별 AE 구조 (GRR 단계별 Assertion-Evidence 테이블) → Step 1 콘텐츠 카운팅의 기반
-   - §3: 세션별 레이아웃 배정 요약 (12유형 × 세션 합계 테이블) → Step 2 유형 배정 기반
+   - §3: 세션별 레이아웃 패턴 **후보** (12유형 × 세션, 장수 미확정) → Step 2에서 최종 유형 배정의 입력 후보. brainstorm에서는 발산적 아이디어 목록만 제공하며, 최종 장수 확정과 유형별 배정은 이 Phase 3에서 수행한다.
    - §4: 인터랙션 요소 목록 (도구별 구현 명세) → Step 3 시퀀스에 반영
    - §5: 코드 워크스루 계획 (5패턴 × 세션) → Step 2 코드 유형 배정
    - §7: Decision Log (ADOPT/REVISE/DROP/MERGE) → ADOPT/REVISE 항목만 설계에 반영
@@ -210,9 +210,9 @@ if abs(total_final - total_grr) / total_grr > 0.30:
 | 섹션전환 | GRR 단계 전환 | I Do→We Do 필수, We Do→You Do 선택적 | ✗ 예외 |
 | 핵심요약 | 세션 마지막 | 정리 구간에 1장 (Exit 평가와 결합 가능) | ✗ 예외 |
 
-#### 2-3. brainstorm §3 레이아웃 + §5 코드 워크스루 매핑
+#### 2-3. brainstorm §3 후보 → 최종 유형 배정 + §5 코드 워크스루 매핑
 
-brainstorm_result.md §3의 세션별 레이아웃 배정과 §5의 코드 워크스루 계획을 기반으로, 각 슬라이드에 구체적 유형을 배정한다.
+brainstorm_result.md §3의 세션별 레이아웃 **후보**(장수 미확정)와 §5의 코드 워크스루 계획을 기반으로, final_slides 범위 내에서 최종 유형별 장수를 **확정**한다. brainstorm에서는 발산적 아이디어 목록만 제공하며, 이 단계에서 수렴적 구조 결정을 수행한다.
 
 **배정 알고리즘**:
 
@@ -239,12 +239,23 @@ for each session:
       → slide_type = "실습/활동"
 
   # 2. 구조 슬라이드 추가 (Step 2-2)
-  # 3. §3 레이아웃 합계와 final_slides 정합 확인
-  layout_total = sum(§3[session] 12유형 합계)
-  if abs(layout_total - final_slides) > 3:
-    → 차이 원인 분석: 구조 슬라이드 미포함 or 콘텐츠 과잉/부족
-    → 조정: layout_total > final_slides → 우선순위 낮은 슬라이드 병합
-    → 조정: layout_total < final_slides → 분절 또는 보조 슬라이드 추가
+
+  # 3. §3 후보 수와 final_slides 비교 → 최종 배정
+  candidate_total = sum(§3[session] 12유형 후보 수)
+
+  if candidate_total > final_slides:
+    # 후보 과잉 → 우선순위 기반 선별
+    # 선별 기준: §7 Decision Log에서 ADOPT > REVISE > DROP 순
+    # GRR 밀도 원칙: I Do 후보 우선 보존, You Do 후보 우선 축소
+    → 우선순위 낮은 후보 DROP 또는 MERGE
+
+  elif candidate_total < final_slides:
+    # 후보 부족 → 보충
+    # §1 AE 테이블에서 미반영 아이디어 추가
+    # 또는 Mayer 분절 원칙 적용하여 기존 후보 분절
+    → 분절 또는 보조 슬라이드 추가
+
+  # 최종 확정: 세션 내 유형별 장수 배정 테이블 생성
 ```
 
 #### 2-4. 코드 슬라이드 밀도 기준 (기술 교육 특화)

@@ -86,7 +86,7 @@ $ARGUMENTS
 - Step 0: input_data.json + session 파일 시드 추출 (발화문/코드/발문/비유/활동) → brainstorm_plan.md
 - Step 1: 4기법(AE변환/6W매핑/범위전환/인터랙션설계) × session 시드 × 4카테고리(시각화/레이아웃/인터랙션/AE구조) → divergent_ideas.md
 - Step 2: 세션별 매핑 + 클러스터링 (GRR 단계, 슬라이드 유형, 도구 적합성) → idea_clusters.md
-- Step 3: 2관점 검증 (학습자 대변인: One Idea Rule/Mayer/6×6/AE적용률, 시간 관리자: estimated_slides_grr ±30%/GRR 밀도/1.5~2.1분/장) → review_result.md
+- Step 3: 2관점 검증 (학습자 대변인: One Idea Rule/Mayer/6×6/AE적용률, 시간 관리자: GRR 밀도 균형/세션 간 편중/12유형 3유형 이상) → review_result.md. 정량적 장수 확정은 Phase 3에서 수행
 - Step 4: AE 구조 + 레이아웃(12유형) + 인터랙션(도구별) + 코드 워크스루(5패턴) + Mayer 8원칙 구체화
 - Step 5: 통합 → brainstorm_result.md (§1~§7)
 
@@ -102,7 +102,7 @@ $ARGUMENTS
 1. Glob `{output_dir}/brainstorm_result.md`로 생성 확인
 2. Read로 brainstorm_result.md 로드 → §1~§7 섹션 존재 확인
 3. §1에 session_manifest의 모든 세션 ID가 포함되는지 확인
-4. §3 레이아웃 합계가 estimated_slides_grr 대비 ±30% 범위인지 확인
+4. §3 레이아웃 후보가 세션별로 완결적인지 확인 (12유형 중 최소 3유형 이상 포함)
 
 ### Phase 3: 슬라이드 구조 설계 → architecture-agent (슬라이드 수, 유형, 순서, 시간 배분)
 
