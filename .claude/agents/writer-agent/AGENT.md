@@ -2,7 +2,7 @@
 name: writer-agent
 description: 작성 에이전트. 이전 단계의 산출물을 통합하여 최종 문서/콘텐츠를 생성합니다.
 tools: Read, Write, Glob
-model: claude-opus-4-6
+model: claude-opus-4-6[1m]
 ---
 
 # Writer Agent
