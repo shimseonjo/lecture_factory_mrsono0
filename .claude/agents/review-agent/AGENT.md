@@ -2,7 +2,7 @@
 name: review-agent
 description: 품질 검토 에이전트. 체크리스트 기반으로 산출물의 품질을 검증하고 피드백을 생성합니다.
 tools: Read, Write
-model: sonnet
+model: sonnet[1m]
 ---
 
 # Review Agent
