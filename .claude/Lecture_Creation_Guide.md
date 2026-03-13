@@ -1023,7 +1023,54 @@ Step 0: 입력 로드 + 검증 (Setup)
 
 상세 워크플로우: `.claude/agents/writer-agent/AGENT.md` 라우팅 → `slide-planning-write.md` 참조
 
-> **구현 상태**: Phase 1~4 구현 완료 (SKILL.md 오케스트레이터 + 에이전트 워크플로우). Phase 5 에이전트별 세부 워크플로우 미구현.
+#### Phase 5: 품질 검토 상세
+
+교안 Phase 7이 **강사가 교안만으로 수업 진행 가능한가**를 검증한다면, 슬라이드 기획 Phase 5는 **슬라이드 제작자가 기획안만으로 슬라이드를 정확히 구현 가능한가**를 검증합니다.
+
+- **선행 조건**: GATE-4 (6항목) 통과 후 실행 — 파일 존재, 슬라이드 수, 시간 합산, AE 적용률, 세션 완전성, §1~§8 완전성은 이미 검증됨
+- **핵심 차이**: GATE-4는 기계적 존재 확인, Phase 5는 품질 검증
+
+**교안 Phase 7 vs 슬라이드 기획 Phase 5 핵심 차이**:
+
+| 차원 | 교안 Phase 7 | 슬라이드 기획 Phase 5 |
+|------|-------------|---------------------|
+| 검증 대상 | `lecture_script.md` (실행 문서) | `slide_plan.md` (제작 지시서) |
+| 고유 검증 영역 | Gagne, GRR, 2-레이어, Think-Aloud | **AE 구조, 4레이어, Mayer, 도구 구현** |
+| 검증 항목 수 | 51개 (S:7+G:8+P:7+T:8+C:12+N:9) | **41개** (S:6+D:7+G:7+T:6+C:8+I:7) |
+| 검토 모드 | 블록별 + 통합 | **세션별 + 통합** |
+
+**6개 검증 영역 (41항목)**:
+
+| 영역 | ID | 항목 수 | 핵심 검증 |
+|------|-----|--------|---------|
+| 구조 완전성 | S | 6 | §1~§8 섹션, 4레이어 존재, 표기법 일관성, 번호 연속, 플레이스홀더 |
+| 정보 밀도·시각 설계 | D | 7 | AE Assertion 품질(서술문/2줄), Evidence 시각 증거, 6×6(요소≤6개), 25~55줄 밀도, VISUAL 충실도, 텍스트전용 ≤10%, Mayer 중복성 |
+| GRR/AE 정렬 | G | 7 | AE 적용률(I Do≥80%), GRR 시퀀스, 시각 밀도 차이, SLO 커버리지, Mayer 분절(≤7장), 구조 슬라이드, 사전훈련 |
+| 시간·수량 | T | 6 | 시간큐 합산, 분/장(1.5~2.5), architecture 일치, §5 유형 분포 정합, §6 인터랙션 정합, §7 코드 정합 |
+| 콘텐츠 정확성 | C | 8 | architecture §3 1:1 매핑, 유형/Assertion 원본, session 발화문·코드·발문 추출, brainstorm 활용, 창작 검출 |
+| 도구 구현 적합성 | I | 7 | IMPL_HINT slide_tool 정합, Progressive Disclosure, 코드 하이라이트, 코드 ≤15줄, 디자인 톤, 레이아웃-유형, 워크스루 패턴 |
+
+**검토 모드**:
+
+| 모드 | 범위 | 검증 영역 | 산출물 |
+|------|------|----------|--------|
+| **세션별 검토** | 해당 세션 `slides_*.md` | D+G+T(1~3)+C+I = ~37항목 | `_review_session_{session_id}.md` |
+| **통합 검토** | `slide_plan.md` 전체 + 세션별 결과 | S+크로스일관성+T(4~6) = ~12항목 | `quality_review.md` |
+
+**적용 프레임워크**:
+- **Assertion-Evidence** (Garner & Alley 2013, p<.01): 서술문 제목 + 시각 증거, 이해도·기억 유의 우수
+- **Mayer 멀티미디어 원칙**: 멀티미디어(d=1.67), 시간근접(d=1.30), 분절(d=0.98), 잉여(d=0.87), 일관성(d=0.86), 공간근접(d=0.79)
+- **인지 부하 이론(CLT)**: Split Attention 방지(코드+설명 인접), Worked Example(단계별 빌드업)
+- **Naegle (2021) PLOS Comp. Biol.**: 슬라이드 요소 ≤6개 (초과 시 인지 부하 500% 증가), One Idea Rule
+- **Presentation Zen SNR**: 신호 대 소음 비율 최대화
+
+**재작성 루프**: REVISION REQUIRED 판정 시 Major 위반 세션만 writer-agent revision 모드로 재작성 (최대 1회). 재작성 후 해당 세션 재검토 + 통합 재검토.
+
+**산출물**: `03_slide_plan/_review_session_{id}.md` (세션별), `03_slide_plan/quality_review.md` (최종)
+
+상세 워크플로우: `.claude/agents/review-agent/AGENT.md` 라우팅 → `slide-planning-review.md` 참조
+
+> **구현 상태**: Phase 1~5 구현 완료 (SKILL.md 오케스트레이터 + 에이전트 워크플로우).
 
 ---
 
@@ -1098,7 +1145,8 @@ lectures/
     │   ├── slides_D{day}-{num}.md         # Phase 4 세션별 슬라이드 명세 ★ (×세션 수)
     │   ├── _plan_footer.md                # Phase 4 꼬리말 (§5~§8)
     │   ├── slide_plan.md                  # Phase 4 최종 (병합) ★
-    │   └── quality_review.md              # Phase 5 최종 ★ (미구현)
+    │   ├── _review_session_{id}.md        # Phase 5 세션별 검토 (×세션 수)
+    │   └── quality_review.md              # Phase 5 최종 ★
     └── 04_slides/                         # /slide-generation 산출물 (미구현)
         └── slides.md                      # 최종 슬라이드 (Marp/Slidev 등)
 ```
@@ -1271,3 +1319,11 @@ lectures/
 - Fisher, D. & Frey, N. (2008). Better Learning Through Structured Teaching. ASCD (GRR 시각화 전략 — I Do→풍부 시각, You Do→최소 시각 밀도 조절)
 - Tesler, L. & Mott, T. (1980). Progressive Disclosure. IxDF (v-click, 줄별 하이라이트, Magic Move)
 - Reynolds, G. (2019). Presentation Zen, 3rd ed. (신호 대 소음 비율 최대화, SNR 원칙)
+
+### 슬라이드 기획 Phase 5 — 품질 검토
+- Garner, J.K. & Alley, M. (2013). Int. J. Engineering Education (AE 구조 품질 기준 — 서술문 제목 2줄 이내, 시각 증거 필수, p<.01)
+- Naegle, K.M. (2021). PLOS Computational Biology (슬라이드 요소 ≤6개, 초과 시 인지 부하 500% 증가, One Idea Rule)
+- Mayer, R.E. (2009/2017). Cambridge Handbook of Multimedia Learning (효과 크기 우선순위: 멀티미디어 d=1.67, 시간근접 d=1.30, 분절 d=0.98, 잉여 d=0.87, 일관성 d=0.86, 공간근접 d=0.79, 신호 d=0.46)
+- Chandler, P. & Sweller, J. (1992). British Journal of Educational Psychology (Split Attention — 코드+설명 동일 슬라이드 인접 배치)
+- Lishinski, A. et al. (2022). ACM TOCSE (코드 교육 인지 부하 — Worked Example, 단계별 빌드업)
+- Marp Directives (marpit.marp.app), Slidev Line Highlighting (sli.dev), reveal.js Code (revealjs.com) — 도구별 구현 검증 기준
