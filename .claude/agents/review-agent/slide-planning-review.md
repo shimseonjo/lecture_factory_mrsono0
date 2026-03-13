@@ -214,14 +214,15 @@
 |---|---------|----------|------|----------|
 | 1 | C-1 | architecture §3 슬라이드 1:1 매핑 | architecture.md §3의 모든 슬라이드 행이 §4에서 [SLIDE] 블록으로 1:1 대응. 누락 또는 추가 검출 | Major (매핑 누락 또는 추가) |
 | 2 | C-2 | 슬라이드 유형 원본 일치 | §4의 각 [SLIDE]의 유형(12유형)이 architecture.md §3에서 배정한 유형과 동일 | Major (유형 변경) |
-| 3 | C-3 | Assertion 제목 원본 부합 | §4의 AE Assertion이 architecture.md §3의 Assertion 제목과 의미적으로 부합. 완전히 다른 주장으로 변경 검출 | Minor (Assertion 의미 변경) |
+| 3 | C-3 | Assertion 제목 원본 부합 | §4의 AE Assertion이 architecture.md §3의 Assertion 제목과 의미적으로 부합. 완전히 다른 주장으로 변경 검출 | Major (Assertion 의미 변경 — AE 구조 핵심 무결성) |
 | 4 | C-4 | session 발화문 추출 | SPEAKER_NOTE 발화큐가 session 파일의 `> "..."` 발화문에서 추출된 것인지. session에 없는 내용 창작 검출 | Major (근거 없는 발화큐 창작) |
 | 5 | C-5 | session 코드 추출 | CONTENT 코드 블록이 session 파일의 fenced code block과 일치 (15줄 이내 발췌). session에 없는 코드 창작 검출 | Major (근거 없는 코드 창작) |
 | 6 | C-6 | session 발문 추출 | SPEAKER_NOTE 발문이 session 파일의 `❓ [LN]` 발문에서 추출된 것인지 | Major (근거 없는 발문 창작) |
 | 7 | C-7 | brainstorm 시각화 활용 | VISUAL 시각화 지시가 brainstorm_result.md §2 시각화 아이디어 또는 §3 레이아웃 후보를 반영. §7 Decision Log에서 ADOPT된 아이디어의 활용률 | Minor (ADOPT된 아이디어가 20%+ 미활용) |
 | 8 | C-8 | 콘텐츠 창작 검출 | §4 CONTENT에 입력 파일(architecture, session, brainstorm)에 없는 새로운 콘텐츠(개념, 코드, 사실, 수치) 신규 생성 검출. writer-agent "콘텐츠 창작 금지" 위반 여부 | Major (근거 없는 팩트 창작) |
+| 9 | C-9 | session 핵심 콘텐츠 활용도 | session 파일의 ★ 핵심 예시 코드, 발문(❓), 비유/메타포가 기획안 §4에 1개 이상 반영되었는지. session에서 ★ 마커가 붙은 코드 블록 → CONTENT에 대응 슬라이드 존재, ❓ 발문 → SPEAKER_NOTE 또는 CONTENT에 반영, 비유 키워드 → VISUAL 또는 CONTENT에 반영 여부 확인 | Minor (핵심 콘텐츠 미활용 — 품질 저하) |
 
-**동작**: C-1~C-8 검증 결과를 `_review_session_{session_id}.md`에 순차 Write한다.
+**동작**: C-1~C-9 검증 결과를 `_review_session_{session_id}.md`에 순차 Write한다.
 
 ---
 
