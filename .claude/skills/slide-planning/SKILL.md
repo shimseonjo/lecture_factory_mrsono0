@@ -268,7 +268,7 @@ GATE-4 검증 (6항목):
 ```
 1. 파일 존재: _plan_header.md + slides_*.md (session_manifest 수) + _plan_footer.md 모두 존재
 2. 슬라이드 수 일치: 각 slides_*.md의 [SLIDE] 블록 수 합 = architecture §3 total_slides
-3. 시간 합산: 각 세션의 체류 시간 합 = duration_min (§8-4 검증 체크리스트)
+3. 시간 합산: 각 세션의 체류 시간 합 = duration_min (architecture §7 시간 배분)
 4. AE 적용률: _plan_footer.md §5-2의 GRR 구간별 AE 적용률 기준 충족
 5. 세션 완전성: session_manifest의 모든 세션 ID에 대응하는 slides_*.md 존재
 6. §1~§8 완전성: _plan_header.md(§1~§3) + slides_*.md(§4) + _plan_footer.md(§5~§8) = 8개 섹션 완전
