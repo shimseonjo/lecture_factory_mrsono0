@@ -31,6 +31,7 @@ model: opus 4.6
 |--------|-----------|
 | 강의구성안 + Phase 6 | `outline-write.md` |
 | 강의교안 + Phase 6 | `script-write.md` |
+| 슬라이드 기획 + Phase 4 | `slide-planning-write.md` |
 
 **공통 금지 사항**: `shared/prohibited-rules.md`를 Read하여 따른다.
 

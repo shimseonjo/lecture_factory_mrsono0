@@ -153,21 +153,164 @@ $ARGUMENTS
 4. §3 세션별 구조 — session_manifest의 모든 세션 ID가 포함되는지 확인
 5. §8 검증 결과 — 7항목 중 Fail이 0개인지 확인 (Fail 존재 시 조정 내역 확인)
 
-### Phase 4: 기획안 작성 → writer-agent (슬라이드별 목적, 레이아웃, 핵심 콘텐츠)
+### Phase 4: 기획안 작성 → writer-agent (슬라이드별 4레이어 명세)
 
-<!-- TODO: Phase 4 오케스트레이터 로직 구현 예정 -->
+Phase 4는 architecture.md §3의 슬라이드 골격을 세션별 4레이어 명세(CONTENT/VISUAL/SPEAKER_NOTE/IMPL_HINT)로 확장한다. 분할 모드 판단 후, Part별로 writer-agent를 순차 호출한다.
+
+#### Step 4-0: 분할 판단
+
+```
+1. Read `{output_dir}/architecture.md` §3 → total_slides 파싱
+2. Read `{output_dir}/input_data.json` → session_manifest 로드
+3. 분할 판단:
+   - total_slides ≤ 80 → 단일 모드 (1회 호출로 전체 세션 작성)
+   - total_slides > 80 → 세션별 분할 모드 (sessions + 2 Part)
+4. session_manifest 순서대로 세션 목록 확정
+```
+
+#### Step 4-1: Part 0 — §1~§3 (Header)
+
+**Agent 호출**:
+- **subagent_type**: `writer-agent`
+- **prompt**:
+
+```
+슬라이드 기획 워크플로우의 Phase 4 기획안 작성을 수행하세요.
+
+**지시사항**: `.claude/agents/writer-agent/AGENT.md`를 읽고 라우팅에 따라 `slide-planning-write.md`를 로드하여 따르세요.
+
+**모드**: Part 0/{total_parts} (§1~§3 Header)
+**실행 Step**: Step 0(입력 로드) + Step 1(§1 기획 개요 + §2 공통 가이드) + Step 2(§3 표기법 + 12유형별 가이드)
+
+**입력 경로**:
+  - `{output_dir}/architecture.md` — §1~§9
+  - `{output_dir}/brainstorm_result.md` — §1~§7
+  - `{output_dir}/input_data.json` — slide_config, session_manifest
+  - 템플릿: `.claude/templates/slide-plan-template.md`
+
+**산출물**: `{output_dir}/_plan_header.md` (§1~§3)
+```
+
+**완료 확인**: Glob `{output_dir}/_plan_header.md` → §1, §2, §3 섹션 존재 확인
+
+#### Step 4-2: Part 1~S — §4 세션별 슬라이드 명세
+
+session_manifest 순서대로 각 세션에 대해 순차 호출한다.
+
+**Agent 호출** (세션별 반복):
+- **subagent_type**: `writer-agent`
+- **prompt**:
+
+```
+슬라이드 기획 워크플로우의 Phase 4 기획안 작성을 수행하세요.
+
+**지시사항**: `.claude/agents/writer-agent/AGENT.md`를 읽고 라우팅에 따라 `slide-planning-write.md`를 로드하여 따르세요.
+
+**모드**: Part {part_num}/{total_parts} (§4 세션 {session_id})
+**실행 Step**: Step 3 (해당 세션의 슬라이드 명세만 작성)
+
+**세션 정보**:
+  - session_id: {session_id}
+  - title: {title}
+  - duration_min: {duration_min}
+  - slides: {slides_count}
+  - content_type: {content_type}
+  - slo: {slo}
+  - grr: {grr_breakdown}
+
+**architecture.md §3 해당 세션 슬라이드 목록**:
+{architecture §3에서 해당 세션 행들을 추출하여 전달}
+
+**입력 경로**:
+  - `{output_dir}/architecture.md` — §3 해당 세션
+  - `{output_dir}/brainstorm_result.md` — §1~§5 (해당 세션 관련)
+  - `{output_dir}/input_data.json` — slide_config
+  - session 파일: `{source_script.lecture_root}/02_script/session_{session_id}.md`
+
+**Overlap 컨텍스트**: {이전 세션 slides_*.md의 마지막 SLIDE 블록, 또는 "없음"}
+
+**산출물**: `{output_dir}/slides_{session_id}.md`
+```
+
+**완료 확인**: Glob `{output_dir}/slides_{session_id}.md` → 파일 존재 + `[SLIDE` 블록 수 = 해당 세션 slides_count 확인
+
+**Overlap 추출**: 세션 완료 후, 생성된 `slides_*.md`의 마지막 `### [SLIDE` 블록(~50줄)을 Read로 추출하여 다음 세션 호출 시 전달
+
+#### Step 4-3: Part N — §5~§8 (Footer)
+
+**Agent 호출**:
+- **subagent_type**: `writer-agent`
+- **prompt**:
+
+```
+슬라이드 기획 워크플로우의 Phase 4 기획안 작성을 수행하세요.
+
+**지시사항**: `.claude/agents/writer-agent/AGENT.md`를 읽고 라우팅에 따라 `slide-planning-write.md`를 로드하여 따르세요.
+
+**모드**: Part {total_parts}/{total_parts} (§5~§8 Footer)
+**실행 Step**: Step 4(§5 유형 분포 집계 + §6 인터랙션 목록) + Step 5(§7 코드 워크스루 + §8 제작 참고)
+
+**입력 경로**:
+  - `{output_dir}/slides_D*.md` — 모든 세션별 슬라이드 명세 (Read하여 집계)
+  - `{output_dir}/architecture.md` — §3 검증 기준
+  - `{output_dir}/brainstorm_result.md` — §5 코드 워크스루
+  - `{output_dir}/input_data.json` — design_tone
+
+**산출물**: `{output_dir}/_plan_footer.md` (§5~§8)
+```
+
+**완료 확인**: Glob `{output_dir}/_plan_footer.md` → §5, §6, §7, §8 섹션 존재 확인
+
+#### Step 4-4: GATE-4 검증 + 병합
+
+GATE-4 검증 (6항목):
+
+```
+1. 파일 존재: _plan_header.md + slides_*.md (session_manifest 수) + _plan_footer.md 모두 존재
+2. 슬라이드 수 일치: 각 slides_*.md의 [SLIDE] 블록 수 합 = architecture §3 total_slides
+3. 시간 합산: 각 세션의 체류 시간 합 = duration_min (§8-4 검증 체크리스트)
+4. AE 적용률: _plan_footer.md §5-2의 GRR 구간별 AE 적용률 기준 충족
+5. 세션 완전성: session_manifest의 모든 세션 ID에 대응하는 slides_*.md 존재
+6. §1~§8 완전성: _plan_header.md(§1~§3) + slides_*.md(§4) + _plan_footer.md(§5~§8) = 8개 섹션 완전
+```
+
+GATE-4 통과 시 → 병합:
+
+```
+1. Read `{output_dir}/_plan_header.md` → 콘텐츠 A
+2. session_manifest 순서대로 각 `{output_dir}/slides_D{day}-{num}.md` Read → 콘텐츠 B[i]
+3. Read `{output_dir}/_plan_footer.md` → 콘텐츠 C
+4. Write `{output_dir}/slide_plan.md`:
+   - 콘텐츠 A (§1~§3)
+   - "## §4 세션별 슬라이드 명세" 헤딩
+   - 콘텐츠 B[1] ~ B[S] (세션 순서대로)
+   - 콘텐츠 C (§5~§8)
+```
+
+GATE-4 실패 시 → 실패 항목 보고 후 사용자에게 확인 요청
+
+---
 
 ### Phase 5: 품질 검토 → review-agent (정보 밀도, 시각 계층, 학습목표 정렬)
 
 <!-- TODO: Phase 5 오케스트레이터 로직 구현 예정 -->
+
+---
 
 ## 산출물 (03_slide_plan/)
 
 ```
 lectures/YYYY-MM-DD_{강의명}/03_slide_plan/
 ├── input_data.json              # Phase 1: 교안 로드 + 도구/형식 선택
-├── brainstorm_result.md         # Phase 2: 브레인스토밍
+├── brainstorm_plan.md           # Phase 2: 브레인스토밍 계획
+├── divergent_ideas.md           # Phase 2: 발산 아이디어
+├── idea_clusters.md             # Phase 2: 클러스터링
+├── review_result.md             # Phase 2: 다관점 검증
+├── brainstorm_result.md         # Phase 2: 최종 브레인스토밍
 ├── architecture.md              # Phase 3: 슬라이드 구조 설계
-├── slide_plan.md                # Phase 4: 최종 기획안 ★
+├── _plan_header.md              # Phase 4: §1~§3 (기획 개요+공통 가이드+표기법)
+├── slides_D{day}-{num}.md       # Phase 4: 세션별 슬라이드 명세 ★ (×세션 수)
+├── _plan_footer.md              # Phase 4: §5~§8 (유형 분포+인터랙션+코드+제작 참고)
+├── slide_plan.md                # Phase 4: 최종 기획안 (병합) ★
 └── quality_review.md            # Phase 5: 품질 검토
 ```

@@ -942,7 +942,88 @@ Step 0: 입력 로드 + 변경 불가 기준 확정
 
 상세 워크플로우: `.claude/agents/architecture-agent/AGENT.md` 라우팅 → `slide-planning-architecture.md` 참조
 
-> **구현 상태**: Phase 1 입력 수집 + Phase 2 시각화 브레인스토밍 + Phase 3 슬라이드 구조 설계 구현 완료 (SKILL.md 오케스트레이터 + 에이전트 워크플로우). Phase 4~5 에이전트별 세부 워크플로우 미구현.
+#### Phase 4: 기획안 작성 상세
+
+교안 Phase 6이 **강사 대본**(실행 문서)을 만든다면, 슬라이드 기획 Phase 4는 **슬라이드 제작 지시서**(제작 명세)를 만든다. architecture.md §3의 각 슬라이드 행을 1:1로 25~55줄의 4레이어 명세로 확장한다.
+
+**교안 Phase 6 vs 슬라이드 기획 Phase 4 핵심 차이**:
+
+| 차원 | 교안 Phase 6 | 슬라이드 기획 Phase 4 |
+|------|------------|---------------------|
+| 산출물 성격 | 실행 문서 (강사 대본) | **제작 지시서** (슬라이드 제작 명세) |
+| 핵심 단위 | 차시 (50분) | 슬라이드 (1.5~2.5분) |
+| 입력 | architecture + brainstorm + research + context7 | architecture §3 + brainstorm + **session 파일** |
+| 상세도 | 차시당 80~120줄 | **슬라이드당 25~55줄** |
+| 고유 요소 | 발화문, Think-Aloud, 행동지시 | **AE 명세, 시각자료 지시, IMPL_HINT, SPEAKER_NOTE** |
+| 분할 | 블록(AM/PM) → 차시별 파일 | **세션별 파일** (`slides_D{day}-{num}.md`) |
+| 소비자 | 강사 | `/slide-generation` 워크플로우 |
+
+**GAIDE 5단계 + 6 Step 구조**:
+
+```
+Step 0: 입력 로드 + 검증 (Setup)
+  │     architecture.md(§3 핵심) + brainstorm_result.md + input_data.json
+  │     + session 파일들 + slide-plan-template.md
+  │
+  ├── Step 1: §1 기획 개요 + §2 공통 가이드 (Draft-1)
+  │   └── 기본 정보, 도구 설정, AE 규칙, GRR 시각 밀도, Mayer 원칙
+  │
+  ├── Step 2: §3 표기법 + 12유형별 레이아웃 가이드 (Draft-2)
+  │   └── 명세 표기법, 유형별 필수/선택/레이아웃/구현/금지 패턴
+  │
+  ├── Step 3: §4 세션별 슬라이드 명세 (Core Draft) ★ 핵심 (75~80%)
+  │   └── architecture.md §3 각 행을 1:1로 25~55줄 명세로 확장
+  │       session 파일에서 콘텐츠 추출 → 4레이어 변환
+  │
+  ├── Step 4: §5 유형 분포 집계 + §6 인터랙션 목록 (Macro Refinement)
+  │   └── Step 3 내용을 Quick Reference로 집계
+  │
+  └── Step 5: §7 코드 워크스루 가이드 + §8 제작 참고 (Micro Refinement)
+      └── 에셋 목록, 디렉티브 레퍼런스, 디자인 톤 가이드
+```
+
+**슬라이드별 4레이어 명세** (Step 3 핵심):
+
+| 레이어 | 내용 | 소스 |
+|--------|------|------|
+| **CONTENT** | AE Assertion + Evidence, 핵심 텍스트 (6×6 이내) | architecture.md §3 + session 파일 발화문/코드 |
+| **VISUAL** | 레이아웃, 다이어그램(Mermaid), 색상/아이콘 | brainstorm §2~§3 + session 비유/메타포 |
+| **SPEAKER_NOTE** | 발화 큐, 시간 큐, 전환 지시, 데모 체크리스트 | session 파일 `> "..."` + `❓` + `🔄` + `⏱️` |
+| **IMPL_HINT** | frontmatter, layout, 디렉티브, 인터랙션 구현 | architecture.md §5 + brainstorm §4 + slide_tool별 |
+
+**Session 파일 콘텐츠 추출 매핑**:
+
+| session 요소 | 추출 패턴 | 슬라이드 변환 |
+|-------------|----------|-------------|
+| `> "..."` 발화문 | GRR 구간별 핵심 문장 | → SPEAKER_NOTE 발화 큐 |
+| ` ```...``` ` 코드 | fenced code block | → CONTENT 코드 (15줄 이내) |
+| `❓ [LN]` 발문 | Bloom's 태그 + 텍스트 | → CONTENT 인터랙션 + SPEAKER_NOTE 발문 |
+| `📋` 활동 지시 | 체크리스트/과제 | → CONTENT 실습 슬라이드 |
+| `🔄` 전환 문구 | 전환 발화 | → SPEAKER_NOTE 전환 지시 |
+| 비유/메타포 | 비유 포함 문장 | → VISUAL 시각화 변환 |
+
+**분할 모드**:
+
+| 조건 | 모드 | Part 수 |
+|------|------|---------|
+| total_slides ≤ 80 | 단일 | 1 |
+| total_slides > 80 | 세션별 분할 | sessions + 2 |
+
+산출물: `_plan_header.md`(§1~§3) + `slides_D{day}-{num}.md` × 세션 수(§4) + `_plan_footer.md`(§5~§8) → 병합 → `slide_plan.md`
+
+**산출물 구조** (`slide_plan.md` §1~§8):
+1. §1 기획 개요 (기본 정보, 세션 매니페스트, 도구 설정)
+2. §2 공통 가이드 (AE 규칙, GRR 밀도, Mayer 원칙, One Idea Rule)
+3. §3 표기법 + 12유형별 레이아웃 가이드
+4. §4 세션별 슬라이드 명세 ★ (4레이어 × 슬라이드 수)
+5. §5 유형 분포 집계 (전체·GRR 구간별·텍스트 전용)
+6. §6 인터랙션 목록 (세션×슬라이드×Bloom's)
+7. §7 코드 워크스루 가이드 (코드 목록, 분절 계획)
+8. §8 제작 참고 (에셋, 디렉티브, 디자인 톤, 검증 체크리스트)
+
+상세 워크플로우: `.claude/agents/writer-agent/AGENT.md` 라우팅 → `slide-planning-write.md` 참조
+
+> **구현 상태**: Phase 1~4 구현 완료 (SKILL.md 오케스트레이터 + 에이전트 워크플로우). Phase 5 에이전트별 세부 워크플로우 미구현.
 
 ---
 
@@ -1005,15 +1086,18 @@ lectures/
     │   ├── lecture_script.md              # Phase 8 최종 통합 (2차 병합) ★
     │   └── quality_review.md              # Phase 8 최종 ★
     │
-    ├── 03_slide_plan/                     # /slide-planning 산출물 (Phase 1~2 구현)
+    ├── 03_slide_plan/                     # /slide-planning 산출물 (Phase 1~4 구현)
     │   ├── input_data.json                # Phase 1 최종
     │   ├── brainstorm_plan.md             # Phase 2 중간 (시각화 브레인스토밍 계획)
     │   ├── divergent_ideas.md             # Phase 2 중간 (발산 아이디어 원시 목록)
     │   ├── idea_clusters.md               # Phase 2 중간 (세션별 클러스터링)
     │   ├── review_result.md               # Phase 2 중간 (다관점 검증 + Decision Log)
     │   ├── brainstorm_result.md           # Phase 2 최종
-    │   ├── architecture.md                # Phase 3 최종 (미구현)
-    │   ├── slide_plan.md                  # Phase 4 최종 ★ (미구현)
+    │   ├── architecture.md                # Phase 3 최종
+    │   ├── _plan_header.md                # Phase 4 머리말 (§1~§3)
+    │   ├── slides_D{day}-{num}.md         # Phase 4 세션별 슬라이드 명세 ★ (×세션 수)
+    │   ├── _plan_footer.md                # Phase 4 꼬리말 (§5~§8)
+    │   ├── slide_plan.md                  # Phase 4 최종 (병합) ★
     │   └── quality_review.md              # Phase 5 최종 ★ (미구현)
     └── 04_slides/                         # /slide-generation 산출물 (미구현)
         └── slides.md                      # 최종 슬라이드 (Marp/Slidev 등)
