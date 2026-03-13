@@ -25,7 +25,7 @@ lectures/
 
 | 워크플로우 | 폴더 | 최종 산출물 |
 |-----------|------|-----------|
-| `/lecture-outline` | `01_outline/` | `lecture_outline.md` |
+| `/lecture-outline` | `01_outline/` | `lecture_outline.md`, `macro_outline.md` |
 | `/lecture-script` | `02_script/` | `lecture_script.md` |
 | `/slide-planning` | `03_slide_plan/` | `slide_plan.md` |
 | `/slide-generation` | `04_slides/` | `slides.md` |
