@@ -600,10 +600,16 @@ Phase 6의 차시별 독립 파일을 블록 → 전체로 병합합니다.
 | 5 | 품질 검토 | review-agent | 정보 밀도, 시각 계층, 학습목표 정렬, 슬라이드 수 적절성 |
 
 **설계 원칙**:
-- 슬라이드당 1개 아이디어 (인지 부하 이론)
-- 정보 밀도: 텍스트 5-7줄, 불릿 4-5개 이하
-- 시간 기준: 1-2분/슬라이드 (교육용은 활동 시간 별도)
-- Assertion-Evidence 구조 (불릿포인트 대체)
+
+| 항목 | 값 |
+|------|-----|
+| 슬라이드당 원칙 | 1아이디어 (인지 부하 이론) |
+| 정보 밀도 | 25-55줄 (기획 명세 상세도) |
+| 세션당 장수 | 동적 산출 (Phase 1: GRR 기반 1차 → Phase 3: 콘텐츠 기반 2차 보정) |
+| 병합 공식 | `round(0.6 × GRR estimate + 0.4 × Content estimate)` |
+| 시간/장 | 1.5-2.1분 (파생 참고값) |
+| 이전 산출물 | session 파일 (session_D{day}-{num}.md) — 본문은 Phase 2~4에서 로드 |
+| Assertion-Evidence | 주장 제목 + 시각 증거 (불릿포인트 대체) |
 
 **슬라이드 유형 (12가지)**:
 제목, 아젠다, 섹션전환, 개념설명, 코드, 비교, 데이터+인사이트, 이미지, 타임라인, 인용, 핵심요약, 실습/활동
@@ -618,7 +624,67 @@ Phase 6의 차시별 독립 파일을 블록 → 전체로 병합합니다.
 
 **산출물**: `lectures/YYYY-MM-DD_{강의명}/03_slide_plan/slide_plan.md`
 
-> **구현 상태**: 파이프라인 개요 및 설계 원칙 정의 완료. SKILL.md 오케스트레이터 로직, 에이전트별 세부 워크플로우, 입력 스키마(`input-schema-slide-planning.json`) 미구현.
+#### Phase 1: 입력 수집 상세
+
+교안의 3개 파일을 로드하고, architecture.md를 분석하여 슬라이드 도구·디자인 톤을 자동 추론하고 session 매니페스트를 생성합니다.
+
+**Step 0: 이전 산출물 탐색 + 로드**
+- `lectures/*/02_script/lecture_script.md` 스캔 → 교안 폴더 선택
+- 로드 대상 3파일: `02_script/architecture.md`(필수), `02_script/input_data.json`(필수), `01_outline/input_data.json`(선택)
+- `architecture.md` §1-2 차시 테이블 + §2-3 GRR 배분 파싱 → session 매니페스트 생성
+- `02_script/session_D{day}-{num}.md` 파일 존재 검증 (Glob)
+- `03_slide_plan/` 폴더 자동 생성
+
+**Step 1: 전체 자동 결정 (질문 없음)** — P1~P5 전부를 자동 결정
+
+| # | 카테고리 | 자동 결정 방법 |
+|---|---------|--------------|
+| P1 | 슬라이드 도구 | content_type hands-on 비율 ≥ 30% AND lab_environment → slidev, 그 외 → marp |
+| P2 | 디자인 톤 | tone_examples 존재 OR tone에 "비유" → friendly_visual, 그 외 → professional |
+| P3 | 기획 범위 | 기본값 `all` — session 매니페스트에서 Day 목록 파싱 |
+| P4 | 정보 밀도 | `standard` 고정 (25-55줄/장) |
+| P5 | 슬라이드 수 | GRR 기반 1차 동적 산출 — GRR 구간별 밀도 테이블 × 시간(분) |
+
+**P5 GRR 기반 슬라이드 수 동적 산출 알고리즘**:
+
+GRR 구간별 슬라이드 밀도 (장/분):
+
+| GRR 구간 | concept | hands-on | activity |
+|----------|---------|----------|----------|
+| 도입 (5분) | 0.8 | 0.8 | 0.8 |
+| I Do | 1.2 | 1.0 | 0.8 |
+| We Do | 0.6 | 0.7 | 0.6 |
+| You Do Together | 0.3 | 0.3 | 0.4 |
+| You Do Alone | 0.2 | 0.3 | 0.3 |
+| 정리 (15분) | 0.5 | 0.5 | 0.5 |
+
+산출 공식: `estimated_slides_grr = round(도입×밀도 + i_do×밀도 + we_do×밀도 + ydt×밀도 + yda×밀도 + 정리×밀도)`
+
+**2단계 병합 예측**: Phase 1에서 GRR 기반 1차 예측 → Phase 3에서 콘텐츠 기반 2차 예측 → 최종 = `round(0.6 × GRR + 0.4 × Content)`
+
+**Step 2: 전체 설정 요약 + AskUserQuestion 1회** — P1~P5 전체 + session 매니페스트 요약 출력 후 확인
+
+사용자 확인/변경 옵션:
+- "진행": 자동 결정값 그대로 사용
+- "변경 필요": Other에 변경 항목 입력 (예: "P1: slidev", "P3: Day 1만")
+- P3 변경 시 → session 매니페스트 필터링 + P5 재계산
+
+**Step 3**: `03_slide_plan/input_data.json` 생성
+
+스키마: `.claude/templates/input-schema-slide-planning.json` 참조
+
+**엣지 케이스**:
+
+| 상황 | 처리 |
+|------|------|
+| 교안 0개 | 에러 → `/lecture-script` 먼저 실행 안내 → 중단 |
+| architecture.md 없음 | 에러 → 중단 (매니페스트 생성 불가) |
+| session 파일 일부 누락 | 경고 → 존재하는 session만 매니페스트 포함 |
+| 03_slide_plan/ 이미 존재 | 덮어쓰기 확인 |
+| P3 변경 (Day 지정) | 해당 Day session만 포함, P5 재계산 |
+| 01_outline/input_data.json 없음 | 경고 → 02_script/input_data.json만으로 진행 |
+
+> **구현 상태**: Phase 1 입력 수집 구현 완료 (SKILL.md 오케스트레이터 + input-agent 워크플로우 + 입력 스키마). Phase 2~5 에이전트별 세부 워크플로우 미구현.
 
 ---
 
@@ -681,8 +747,12 @@ lectures/
     │   ├── lecture_script.md              # Phase 8 최종 통합 (2차 병합) ★
     │   └── quality_review.md              # Phase 8 최종 ★
     │
-    ├── 03_slide_plan/                     # /slide-planning 산출물 (미구현)
-    │   └── slide_plan.md                  # 최종 슬라이드 기획
+    ├── 03_slide_plan/                     # /slide-planning 산출물 (Phase 1 구현)
+    │   ├── input_data.json                # Phase 1 최종
+    │   ├── brainstorm_result.md           # Phase 2 최종 (미구현)
+    │   ├── architecture.md                # Phase 3 최종 (미구현)
+    │   ├── slide_plan.md                  # Phase 4 최종 ★ (미구현)
+    │   └── quality_review.md              # Phase 5 최종 ★ (미구현)
     └── 04_slides/                         # /slide-generation 산출물 (미구현)
         └── slides.md                      # 최종 슬라이드 (Marp/Slidev 등)
 ```

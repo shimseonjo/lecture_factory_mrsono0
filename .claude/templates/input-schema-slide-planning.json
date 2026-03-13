@@ -1,0 +1,196 @@
+{
+  "$schema": "03_slide_plan/input_data.json 스키마 — 교안 input_data.json 기반 필드 복사 + slide_config + session_manifest + source_script 확장",
+  "_note": "02_script/input_data.json의 기반 필드(topic, target_learner, learning_goals, format, schedule, keywords, prerequisites, exclusions, assessment, pedagogy, tone, tone_examples, reference_sources, context)가 최상위에 복사된 뒤, 아래 slide_config, session_manifest, source_script가 추가된다.",
+
+  "slide_config": {
+    "slide_tool": {
+      "type": "string",
+      "enum": ["marp", "slidev", "gamma", "revealjs"],
+      "description": "P1: 슬라이드 도구 — content_type + lab_environment 분석으로 자동 결정"
+    },
+    "slide_tool_reasoning": {
+      "type": "string",
+      "description": "P1: 슬라이드 도구 자동 추론의 근거 설명 (예: 'hands-on 비율 42%, lab_environment 존재 → slidev')"
+    },
+    "design_tone": {
+      "type": "string",
+      "enum": ["friendly_visual", "professional", "minimal"],
+      "description": "P2: 디자인 톤 — tone/tone_examples 분석으로 자동 결정"
+    },
+    "scope": {
+      "type": "object",
+      "description": "P3: 기획 범위",
+      "properties": {
+        "target": {
+          "type": "string",
+          "enum": ["all", "selected"],
+          "default": "all",
+          "description": "'all'이면 전체 Day, 'selected'이면 selected_days 참조"
+        },
+        "days": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "전체 Day 목록 (예: ['Day 1', 'Day 2', 'Day 3'])"
+        },
+        "sessions": {
+          "type": "number",
+          "description": "범위 내 전체 세션 수"
+        },
+        "selected_days": {
+          "type": "array",
+          "items": { "type": "number" },
+          "default": [],
+          "description": "target이 'selected'일 때 기획할 Day 번호 목록"
+        }
+      }
+    },
+    "info_density": {
+      "type": "string",
+      "const": "standard",
+      "description": "P4: 정보 밀도 — 고정값 standard (25-55줄/장)"
+    },
+    "info_density_lines": {
+      "type": "object",
+      "description": "P4: 정보 밀도 줄 수 범위",
+      "properties": {
+        "min": { "type": "number", "const": 25 },
+        "max": { "type": "number", "const": 55 }
+      }
+    },
+    "estimated_slides": {
+      "type": "object",
+      "description": "P5: 예상 슬라이드 수 (1차 GRR 기반)",
+      "properties": {
+        "method": {
+          "type": "string",
+          "const": "grr_based",
+          "description": "1차 산출 방법"
+        },
+        "total": {
+          "type": "number",
+          "description": "전체 예상 슬라이드 수 합계"
+        },
+        "merge_formula": {
+          "type": "string",
+          "const": "round(0.6 * grr + 0.4 * content)",
+          "description": "Phase 3에서 콘텐츠 기반 2차 보정 시 적용할 가중 평균 공식"
+        }
+      }
+    },
+    "slide_density_table": {
+      "type": "object",
+      "description": "GRR 구간별 슬라이드 밀도 테이블 (장/분)",
+      "properties": {
+        "concept": {
+          "type": "object",
+          "properties": {
+            "intro": { "type": "number", "const": 0.8 },
+            "i_do": { "type": "number", "const": 1.2 },
+            "we_do": { "type": "number", "const": 0.6 },
+            "ydt": { "type": "number", "const": 0.3 },
+            "yda": { "type": "number", "const": 0.2 },
+            "wrap": { "type": "number", "const": 0.5 }
+          }
+        },
+        "hands_on": {
+          "type": "object",
+          "properties": {
+            "intro": { "type": "number", "const": 0.8 },
+            "i_do": { "type": "number", "const": 1.0 },
+            "we_do": { "type": "number", "const": 0.7 },
+            "ydt": { "type": "number", "const": 0.3 },
+            "yda": { "type": "number", "const": 0.3 },
+            "wrap": { "type": "number", "const": 0.5 }
+          }
+        },
+        "activity": {
+          "type": "object",
+          "properties": {
+            "intro": { "type": "number", "const": 0.8 },
+            "i_do": { "type": "number", "const": 0.8 },
+            "we_do": { "type": "number", "const": 0.6 },
+            "ydt": { "type": "number", "const": 0.4 },
+            "yda": { "type": "number", "const": 0.3 },
+            "wrap": { "type": "number", "const": 0.5 }
+          }
+        }
+      }
+    }
+  },
+
+  "session_manifest": {
+    "type": "array",
+    "description": "Step 0에서 생성한 session 매니페스트 — 각 세션의 구조 정보 + 1차 슬라이드 수",
+    "items": {
+      "type": "object",
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "description": "세션 ID (예: D1-1, D2-3)"
+        },
+        "file_path": {
+          "type": "string",
+          "description": "02_script/ 하위 세션 파일 경로 (예: 02_script/session_D1-1.md)"
+        },
+        "title": {
+          "type": "string",
+          "description": "세션 제목"
+        },
+        "duration_min": {
+          "type": "number",
+          "description": "세션 시간 (분)"
+        },
+        "slo": {
+          "type": "string",
+          "description": "세션 학습목표 (SLO)"
+        },
+        "blooms_level": {
+          "type": "string",
+          "description": "Bloom's 수준 (예: 이해, 적용)"
+        },
+        "content_type": {
+          "type": "string",
+          "enum": ["concept", "hands-on", "activity"],
+          "description": "콘텐츠 유형"
+        },
+        "grr": {
+          "type": "object",
+          "description": "GRR 시간 배분 (분)",
+          "properties": {
+            "i_do": { "type": "number" },
+            "we_do": { "type": "number" },
+            "ydt": { "type": "number" },
+            "yda": { "type": "number" }
+          }
+        },
+        "estimated_slides_grr": {
+          "type": "number",
+          "description": "GRR 기반 1차 예상 슬라이드 수"
+        }
+      }
+    }
+  },
+
+  "source_script": {
+    "type": "object",
+    "description": "교안 파일 경로 참조",
+    "properties": {
+      "lecture_root": {
+        "type": "string",
+        "description": "강의 루트 폴더 경로 (예: lectures/2026-03-10_AI-native_스프링부트기초)"
+      },
+      "architecture_path": {
+        "type": "string",
+        "description": "02_script/architecture.md 전체 경로"
+      },
+      "script_input_path": {
+        "type": "string",
+        "description": "02_script/input_data.json 전체 경로"
+      },
+      "outline_input_path": {
+        "type": "string",
+        "description": "01_outline/input_data.json 전체 경로 (존재 시)"
+      }
+    }
+  }
+}

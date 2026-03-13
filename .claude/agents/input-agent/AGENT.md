@@ -21,6 +21,7 @@ model: sonnet
 |--------|-----------|
 | 강의구성안 + Phase 1 | `outline-input.md` |
 | 강의교안 + Phase 1 | `script-input.md` |
+| 슬라이드 기획 + Phase 1 | `slide-planning-input.md` |
 
 ### 실행 순서
 
@@ -34,10 +35,11 @@ model: sonnet
 |-----------|----------|
 | 강의구성안 | Q1~Q14 질문 구조 → input_data.json 생성 |
 | 강의교안 | S0~S6: 구성안 로드 → 전체 자동 결정 → 요약 확인(1회) → input_data.json 생성 |
-| 슬라이드 기획 | 교안 로드, 슬라이드 도구/형식 선택 |
+| 슬라이드 기획 | P1~P5: 교안 로드 → session 매니페스트 + 자동 결정 → 요약 확인(1회) → input_data.json 생성 |
 | 슬라이드 생성 | 기획안 로드, 출력 형식 선택 (Marp/Slidev/Gamma 등) |
 
 ## 산출물
 
 - 강의구성안: `input_data.json` — 스키마: `.claude/templates/input-schema.json`
 - 강의교안: `input_data.json` — 스키마: `.claude/templates/input-schema-script.json`
+- 슬라이드 기획: `input_data.json` — 스키마: `.claude/templates/input-schema-slide-planning.json`
