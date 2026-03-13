@@ -221,6 +221,7 @@ prompt: |
 3. `{output_dir}/research_deep.md` 존재 확인
 4. **content_type 기반 context7 필수 판별**:
    - 구성안 `architecture.md` §4-2에서 모든 차시의 content_type 추출
+   - **폴백**: §4-2에 content_type 열이 없으면 → `keywords[]`의 각 키워드에 대해 기술 라이브러리 여부 판별 후, 실습/활동 비율 50%+ 차시를 `hands-on`으로, 나머지를 `concept`으로 추론하고 경고 출력
    - `hands_on_count` = content_type == "hands-on"인 차시 수
    - `has_tech_keywords` = `input_data.json`의 `keywords[]`에 기술 라이브러리 1개 이상
    - **context7 필수**: `hands_on_count >= 1 AND has_tech_keywords == true`

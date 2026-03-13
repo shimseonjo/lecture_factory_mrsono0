@@ -14,7 +14,7 @@ Step 0: 입력 로드
   │     lecture_outline.md + architecture.md + brainstorm_result.md + research_deep.md + input_data.json
   │
   ├── Step 1: 구조 완전성 검증
-  │   └── 9개 섹션 + 22개 서브섹션 존재, 필수 테이블, 빈 셀 검출
+  │   └── 9개 섹션 + 25개 서브섹션 존재, 필수 테이블, 빈 셀 검출
   │   └── Write → _review_step1.md
   │
   ├── Step 2: 교수설계 정렬 검증 (QM Rubric 기반)
