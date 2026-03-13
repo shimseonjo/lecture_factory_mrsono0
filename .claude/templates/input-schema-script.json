@@ -1,6 +1,6 @@
 {
   "$schema": "02_script/input_data.json 스키마 — 구성안 전체 필드 + script_config 확장",
-  "_note": "구성안 input_data.json의 모든 필드(topic, target_learner, learning_goals, format, schedule, keywords, prerequisites, exclusions, assessment, pedagogy, tone, tone_examples, reference_sources, context)가 최상위에 복사된 뒤, 아래 script_config와 source_outline이 추가된다.",
+  "_note": "구성안 input_data.json의 모든 필드(topic, target_learner, learning_goals, format, schedule, keywords, prerequisites, exclusions, assessment, pedagogy, tone, tone_examples, reference_sources, context, output_scope, lab_environment)가 최상위에 복사된 뒤, 아래 script_config와 source_outline이 추가된다.",
 
   "script_config": {
     "target_sessions": {
