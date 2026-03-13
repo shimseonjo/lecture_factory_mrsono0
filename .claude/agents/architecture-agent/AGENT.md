@@ -29,6 +29,7 @@ model: opus 4.6
 |--------|-----------|
 | 강의구성안 + Phase 5 | `outline-architecture.md` |
 | 강의교안 + Phase 5 | `script-architecture.md` |
+| 슬라이드 기획 + Phase 3 | `slide-planning-architecture.md` |
 
 ### 실행 순서
 

@@ -595,7 +595,7 @@ Phase 6의 차시별 독립 파일을 블록 → 전체로 병합합니다.
 |-------|------|---------|----------|
 | 1 | 입력 수집 | input-agent | 교안 3파일 로드 + session 매니페스트 생성, P1~P5 자동 결정(도구/톤/범위/밀도/GRR 기반 슬라이드 수), AskUserQuestion 1회 → input_data.json |
 | 2 | 브레인스토밍 | brainstorm-agent | Session 시드 추출(5유형), 4기법(AE변환/6W매핑/범위전환/인터랙션설계) 발산, 2관점(학습자대변인/시간관리자) 검증 → brainstorm_result.md (§1~§7: AE구조/시각화/레이아웃/인터랙션/코드워크스루/Mayer/Decision) |
-| 3 | 구조 설계 | architecture-agent | 슬라이드 수 결정, 유형 배정, 순서, 시간 배분 |
+| 3 | 구조 설계 | architecture-agent | Middle-out 설계: GRR 1차+콘텐츠 2차 병합 슬라이드 수 결정, 12유형 배정(AE I Do≥80%), GRR 순서+Mayer 분절, 시간 가중 배분, 7항목 검증 → architecture.md (§1~§9) |
 | 4 | 기획안 작성 | writer-agent | slide-plan-template.md 기반, 슬라이드별 목적/레이아웃/콘텐츠/시각자료 |
 | 5 | 품질 검토 | review-agent | 정보 밀도, 시각 계층, 학습목표 정렬, 슬라이드 수 적절성 |
 
@@ -725,7 +725,89 @@ GRR 구간별 슬라이드 밀도 (장/분):
 
 상세 워크플로우: `.claude/agents/brainstorm-agent/AGENT.md` 라우팅 → `slide-planning-brainstorm.md` 참조
 
-> **구현 상태**: Phase 1 입력 수집 + Phase 2 시각화 브레인스토밍 구현 완료 (SKILL.md 오케스트레이터 + 에이전트 워크플로우). Phase 3~5 에이전트별 세부 워크플로우 미구현.
+#### Phase 3: 슬라이드 구조 설계 상세
+
+구성안 Phase 5가 **Top-down**(학습 결과 → 차시 배정), 교안 Phase 5가 **Bottom-up**(차시 내부 구조 채움)이라면, 슬라이드 기획 Phase 3은 **Middle-out**(GRR 1차 추정 + 콘텐츠 2차 추정을 병합하여 슬라이드 구조 확정)입니다.
+
+**교안 Phase 5 vs 슬라이드 기획 Phase 3 핵심 차이**:
+
+| 차원 | 교안 Phase 5 | 슬라이드 기획 Phase 3 |
+|------|------------|---------------------|
+| 설계 대상 | 차시 내부 구조 (도입-전개-정리) | 세션별 슬라이드 시퀀스 |
+| 설계 방향 | Bottom-up (차시 내부를 채움) | Middle-out (GRR+콘텐츠 병합) |
+| 불변 기준 | 구성안 architecture.md | 교안 architecture.md + session_manifest |
+| 핵심 프레임워크 | Gagne 9사태, GRR, Bloom's, CMU 3점 | AE 구조, Mayer 8원칙, GRR 밀도, One Idea Rule |
+| 검증 항목 수 | 6항목 | 7항목 |
+
+**Step 0~4 워크플로우**:
+
+```
+Step 0: 입력 로드 + 변경 불가 기준 확정
+  │     input_data.json (session_manifest, slide_config)
+  │     + brainstorm_result.md (§1~§7)
+  │     + 교안 architecture.md (변경 불가)
+  │
+  ├── Step 1: 콘텐츠 기반 2차 슬라이드 수 산출 + GRR 병합
+  │     §1 AE 테이블 카운팅 → estimated_slides_content
+  │     → final = round(0.6 × GRR + 0.4 × Content)
+  │     → content_type 보정 (hands-on ×0.9, activity ×0.8)
+  │     → 1.5~2.5분/장 범위 clamp
+  │
+  ├── Step 2: 슬라이드 유형 배정 (12유형) + GRR 단계별 배치
+  │     AE 적용률 검증 (I Do≥80%, We Do≥60%, You Do≥30%)
+  │     + 구조 슬라이드 자동 삽입 + 유형 분포 균형 검증
+  │
+  ├── Step 3: 슬라이드 시퀀스 + 전환 설계
+  │     GRR 순서 배열 + Mayer 분절(I Do 연속 ≤7장)
+  │     + Progressive Disclosure + Pre-training
+  │
+  └── Step 4: 시간 배분(유형별 가중치) + 검증(7항목) + architecture.md 통합 작성
+```
+
+**적용 프레임워크**:
+- Assertion-Evidence (Garner & Alley, 2013, p<.01): Body slides에 AE 필수, 이해도·기억 유의하게 우수
+- One Idea Rule (Naegle, 2021, PLOS Comp. Biol.): 요소 6개 초과 시 인지 부하 ~500% 증가
+- Mayer Segmenting (d=0.79~0.98, Mayer 2020): I Do 구간 5~7장마다 확인 슬라이드 삽입
+- Spatial Contiguity (g=0.63, Ginns 2006): 코드+설명 동일 슬라이드 배치
+- CLT 코드 슬라이드 (ACM TOCSE, 2022): 코드 10~15줄/슬라이드, Split Attention 방지
+- GRR 시각화 밀도: I Do→풍부(개념·코드), We Do→참여형(발문), You Do→최소(과제)
+
+**2단계 슬라이드 수 병합**: Phase 1 GRR 기반 1차 예측 → Phase 3 콘텐츠 기반 2차 예측 → 최종 = `round(0.6 × GRR + 0.4 × Content)`, content_type별 밀도 보정 적용
+
+**슬라이드 유형별 시간 가중치**:
+
+| 유형 | 가중치 | 체류 시간 | 근거 |
+|------|--------|---------|------|
+| 코드 | 1.5 | 2~3분 | CLT in CS Ed., 2022 |
+| 실습/활동 | 1.5 | 2~4분 | SessionLab, 2022 |
+| 비교 | 1.3 | 1.5~2분 | 양측 설명 |
+| 개념설명 | 1.2 | 1~2분 | Naegle, 2021 |
+| 데이터+인사이트 | 1.2 | 1~2분 | 수치 해석 |
+| 타임라인 | 1.0 | 1~1.5분 | 순차 설명 |
+| 이미지 | 0.8 | 0.5~1분 | 시각적 이해 |
+| 핵심요약 | 0.8 | 1분 | 정리 |
+| 아젠다 | 0.7 | 30초~1분 | 구조 안내 |
+| 제목 | 0.5 | 30초 | 빠른 전환 |
+| 인용 | 0.5 | 30초 | 짧은 강조 |
+| 섹션전환 | 0.3 | 15~30초 | 짧은 전환 |
+
+**검증 체크리스트 (7항목)**:
+
+| # | 항목 | 기준 |
+|---|------|------|
+| 1 | 시간 합산 | 세션별 합 = duration_min |
+| 2 | 분당 슬라이드 | 1.5~2.5분/장 |
+| 3 | AE 적용률 | I Do≥80%, We Do≥60%, You Do≥30% |
+| 4 | One Idea Rule | 요소 ≤6개/슬라이드 |
+| 5 | GRR 병합 편차 | final vs GRR ±30% |
+| 6 | 유형 분포 | 텍스트 전용 ≤10% |
+| 7 | Mayer 분절 | I Do 연속 ≤7장 |
+
+**산출물**: `03_slide_plan/architecture.md` (§1~§9: 기준 요약, 수 산출, 세션별 구조, 유형 분포, 인터랙션, 코드 워크스루, 시간 배분, 검증, 설계 로그)
+
+상세 워크플로우: `.claude/agents/architecture-agent/AGENT.md` 라우팅 → `slide-planning-architecture.md` 참조
+
+> **구현 상태**: Phase 1 입력 수집 + Phase 2 시각화 브레인스토밍 + Phase 3 슬라이드 구조 설계 구현 완료 (SKILL.md 오케스트레이터 + 에이전트 워크플로우). Phase 4~5 에이전트별 세부 워크플로우 미구현.
 
 ---
 

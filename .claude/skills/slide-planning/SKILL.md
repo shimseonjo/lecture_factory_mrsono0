@@ -106,7 +106,52 @@ $ARGUMENTS
 
 ### Phase 3: 슬라이드 구조 설계 → architecture-agent (슬라이드 수, 유형, 순서, 시간 배분)
 
-<!-- TODO: Phase 3 오케스트레이터 로직 구현 예정 -->
+**Agent 호출**:
+- **subagent_type**: `architecture-agent`
+- **prompt**:
+
+```
+슬라이드 기획 워크플로우의 Phase 3 슬라이드 구조 설계를 수행하세요.
+
+**지시사항**: `.claude/agents/architecture-agent/AGENT.md`를 읽고 라우팅에 따라 `slide-planning-architecture.md`를 로드하여 따르세요.
+
+**핵심 원칙**:
+- Step 0: 4개 파일 로드 (input_data.json + brainstorm_result.md + 교안 architecture.md + 구성안 input_data.json)
+  - session_manifest, slide_config, AE 구조(§1), 레이아웃(§3), 인터랙션(§4), 코드 워크스루(§5) 추출
+  - 교안 architecture.md의 차시 구조·GRR 배분은 변경 불가 기준
+- Step 1: 콘텐츠 기반 2차 슬라이드 수 산출 + GRR 병합
+  - §1 AE 테이블 행 카운팅 → estimated_slides_content
+  - 병합: final = round(0.6 × GRR + 0.4 × Content)
+  - content_type 보정 (hands-on ×0.9, activity ×0.8)
+  - 1.5~2.5분/장 범위 clamp
+- Step 2: 12유형 배정 + GRR 단계별 배치
+  - AE 적용률: I Do ≥80%, We Do ≥60%, You Do ≥30%
+  - 구조 슬라이드 자동 삽입 (제목/아젠다/섹션전환/핵심요약)
+  - §3 레이아웃 + §5 코드 워크스루 매핑
+  - 유형 분포 균형 검증 (텍스트 전용 ≤10%, hands-on 코드 ≥30%)
+- Step 3: 슬라이드 시퀀스 + 전환 설계
+  - GRR 순서 배열 + Mayer 분절 (I Do 연속 ≤7장)
+  - Progressive Disclosure (§4 인터랙션, slide_tool별 구현)
+  - Pre-training 슬라이드 배치 (신규 용어 ≥3개 세션)
+  - 세션 간/Day 간 전환 패턴
+- Step 4: 시간 배분 (유형별 가중치) + 검증(7항목) + architecture.md 통합 작성
+  - 7항목: 시간합산, 분/장, AE율, One Idea, GRR편차, 유형분포, 분절
+
+**입력 경로**:
+  - `{output_dir}/input_data.json` — session_manifest, slide_config
+  - `{output_dir}/brainstorm_result.md` — §1~§7
+  - `{source_script.lecture_root}/02_script/architecture.md` — 변경 불가 기준
+  - `{source_script.lecture_root}/01_outline/input_data.json` — 원본 참조 (존재 시)
+
+**산출물**: `{output_dir}/architecture.md` (§1~§9 구조)
+```
+
+**완료 확인**:
+1. Glob `{output_dir}/architecture.md`로 생성 확인
+2. Read로 architecture.md 로드 → §1~§9 섹션 존재 확인
+3. §2 슬라이드 수 산출 — 전체 합계가 session_manifest 기반 GRR 1차 대비 ±30% 범위인지 확인
+4. §3 세션별 구조 — session_manifest의 모든 세션 ID가 포함되는지 확인
+5. §8 검증 결과 — 7항목 중 Fail이 0개인지 확인 (Fail 존재 시 조정 내역 확인)
 
 ### Phase 4: 기획안 작성 → writer-agent (슬라이드별 목적, 레이아웃, 핵심 콘텐츠)
 
