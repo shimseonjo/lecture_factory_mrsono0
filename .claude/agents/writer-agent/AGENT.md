@@ -22,6 +22,7 @@ model: claude-opus-4-6[1m]
 | 강의교안 | 섹션별 스크립트, 발문, 학습활동, 평가문항, 발표자 노트 |
 | 슬라이드 기획 | 슬라이드별 목적, 레이아웃 유형, 핵심 콘텐츠, 시각자료 지시 |
 | 슬라이드 생성 | 마크다운 슬라이드 또는 AI 도구용 프롬프트 |
+| 거시적 강의구성안 | 과정 전체를 한 페이지 테이블로 요약 (교시→시간 블록 병합, 카테고리/태그 매핑) |
 
 ## 라우팅
 
@@ -32,6 +33,7 @@ model: claude-opus-4-6[1m]
 | 강의구성안 + Phase 6 | `outline-write.md` |
 | 강의교안 + Phase 6 | `script-write.md` |
 | 슬라이드 기획 + Phase 4 | `slide-planning-write.md` |
+| 거시적 강의구성안 + Phase 8 | `macro-outline-write.md` |
 
 **공통 금지 사항**: `shared/prohibited-rules.md`를 Read하여 따른다.
 
