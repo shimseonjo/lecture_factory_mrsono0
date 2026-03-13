@@ -626,24 +626,44 @@ Phase 6의 차시별 독립 파일을 블록 → 전체로 병합합니다.
 
 #### Phase 1: 입력 수집 상세
 
-교안의 3개 파일을 로드하고, architecture.md를 분석하여 슬라이드 도구·디자인 톤을 자동 추론하고 session 매니페스트를 생성합니다.
+교안의 3개 파일을 로드하고, architecture.md를 분석하여 슬라이드 도구·디자인 톤을 자동 추론하고 session 매니페스트를 생성합니다. 총 AskUserQuestion 호출: 1회 확인용 (폴더 선택 포함 시 최대 2회).
 
 **Step 0: 이전 산출물 탐색 + 로드**
-- `lectures/*/02_script/lecture_script.md` 스캔 → 교안 폴더 선택
-- 로드 대상 3파일: `02_script/architecture.md`(필수), `02_script/input_data.json`(필수), `01_outline/input_data.json`(선택)
-- `architecture.md` §1-2 차시 테이블 + §2-3 GRR 배분 파싱 → session 매니페스트 생성
-- `02_script/session_D{day}-{num}.md` 파일 존재 검증 (Glob)
-- `03_slide_plan/` 폴더 자동 생성
+
+교안 폴더 탐색 로직:
+```
+Glob `lectures/*/02_script/lecture_script.md` 스캔
+→ 0개: 에러 "교안이 없습니다. /lecture-script를 먼저 실행하세요." → 중단
+→ 1개: 자동 선택 후 확인 "'{폴더명}'의 교안을 사용합니다. 맞습니까?"
+→ 2개+: 사용자 선택 (폴더명 목록, 최신순 정렬)
+```
+
+로드 대상 3파일:
+
+| 파일 | 용도 | 실패 시 |
+|------|------|---------|
+| `02_script/architecture.md` | 차시 구조, GRR 배분, content_type → session 매니페스트 | 에러 → 중단 |
+| `02_script/input_data.json` | 기존 설정 복사 기반 | 에러 → 중단 |
+| `01_outline/input_data.json` | tone_examples, lab_environment 원본 참조 | 경고 → 계속 |
+
+Session 매니페스트 생성 (5단계):
+1. `architecture.md` §1-2 차시 테이블 파싱 → (day, session_num, title, slo, blooms, content_type) 추출
+2. `architecture.md` §2-3 GRR 배분 테이블 파싱 → (i_do, we_do, ydt, yda) 시간(분) 추출
+3. `02_script/session_D{day}-{num}.md` 파일 존재 검증 (Glob)
+4. GRR 기반 1차 슬라이드 수 산출 (P5 알고리즘 적용)
+5. 매니페스트 배열: 각 session에 `(session_id, file_path, title, duration_min, slo, blooms_level, content_type, grr, estimated_slides_grr)` 저장
+
+`03_slide_plan/` 폴더 자동 생성
 
 **Step 1: 전체 자동 결정 (질문 없음)** — P1~P5 전부를 자동 결정
 
 | # | 카테고리 | 자동 결정 방법 |
 |---|---------|--------------|
-| P1 | 슬라이드 도구 | content_type hands-on 비율 ≥ 30% AND lab_environment → slidev, 그 외 → marp |
-| P2 | 디자인 톤 | tone_examples 존재 OR tone에 "비유" → friendly_visual, 그 외 → professional |
-| P3 | 기획 범위 | 기본값 `all` — session 매니페스트에서 Day 목록 파싱 |
+| P1 | 슬라이드 도구 | content_type hands-on 비율 ≥ 30% AND lab_environment → slidev, 그 외 → marp. 추론 근거를 `slide_tool_reasoning`에 기록 |
+| P2 | 디자인 톤 | tone_examples 존재 OR tone에 "비유" → friendly_visual, 그 외 → professional. `01_outline/input_data.json` 로드 실패 시 tone만으로 판단 |
+| P3 | 기획 범위 | 기본값 `all` — session 매니페스트에서 Day 목록 파싱하여 `scope.days` 배열에 저장 |
 | P4 | 정보 밀도 | `standard` 고정 (25-55줄/장) |
-| P5 | 슬라이드 수 | GRR 기반 1차 동적 산출 — GRR 구간별 밀도 테이블 × 시간(분) |
+| P5 | 슬라이드 수 | GRR 기반 1차 동적 산출 — GRR 구간별 밀도 테이블 × 시간(분). 2단계 병합은 Phase 3에서 수행 |
 
 **P5 GRR 기반 슬라이드 수 동적 산출 알고리즘**:
 
@@ -659,17 +679,27 @@ GRR 구간별 슬라이드 밀도 (장/분):
 | 정리 (15분) | 0.5 | 0.5 | 0.5 |
 
 산출 공식: `estimated_slides_grr = round(도입×밀도 + i_do×밀도 + we_do×밀도 + ydt×밀도 + yda×밀도 + 정리×밀도)`
+- 도입/정리 시간은 architecture.md에서 파싱 가능 시 실제 값 사용, 불가 시 기본값(도입 5분, 정리 15분)
+- content_type 미식별 시 `concept` 기본값 적용
+- 각 session의 `estimated_slides_grr`을 매니페스트에 저장, 전체 합계를 `slide_config.estimated_slides.total`에 저장
 
-**2단계 병합 예측**: Phase 1에서 GRR 기반 1차 예측 → Phase 3에서 콘텐츠 기반 2차 예측 → 최종 = `round(0.6 × GRR + 0.4 × Content)`
+**2단계 병합 예측**: Phase 1에서 GRR 기반 1차 예측 → Phase 3에서 콘텐츠 기반 2차 예측 → 최종 = `round(0.6 × GRR + 0.4 × Content)`. Phase 1에서는 1차 값만 기록하고 `merge_formula` 필드에 공식을 명시
 
-**Step 2: 전체 설정 요약 + AskUserQuestion 1회** — P1~P5 전체 + session 매니페스트 요약 출력 후 확인
+**Step 2: 전체 설정 요약 + AskUserQuestion 반드시 1회** — P1~P5 전체 + session 매니페스트 요약 출력 후 확인
+
+요약 출력에 포함: P1~P5 각 결과·근거 + session 매니페스트 테이블(Session, 제목, 유형, GRR 시간, 예상 장수)
 
 사용자 확인/변경 옵션:
 - "진행": 자동 결정값 그대로 사용
 - "변경 필요": Other에 변경 항목 입력 (예: "P1: slidev", "P3: Day 1만")
-- P3 변경 시 → session 매니페스트 필터링 + P5 재계산
+  - 변경 형식: `"항목: 값"` — 변경된 항목만 갱신, 나머지 유지
+  - P3 변경 시 → session 매니페스트 필터링 + P5 재계산
 
 **Step 3**: `03_slide_plan/input_data.json` 생성
+1. `02_script/input_data.json`의 기반 필드 복사 (topic, target_learner, learning_goals, format, schedule, keywords 등)
+2. `slide_config` 객체 추가 (P1~P5 결과)
+3. `session_manifest` 배열 추가 (Step 0에서 생성한 매니페스트)
+4. `source_script` 객체 추가 (교안 파일 경로: lecture_root, architecture_path, script_input_path, outline_input_path)
 
 스키마: `.claude/templates/input-schema-slide-planning.json` 참조
 
@@ -678,11 +708,14 @@ GRR 구간별 슬라이드 밀도 (장/분):
 | 상황 | 처리 |
 |------|------|
 | 교안 0개 | 에러 → `/lecture-script` 먼저 실행 안내 → 중단 |
-| architecture.md 없음 | 에러 → 중단 (매니페스트 생성 불가) |
+| `lecture_script.md` 없음 | 에러 → "교안이 완성되지 않았습니다." → 중단 |
+| `architecture.md` 없음 | 에러 → 중단 (매니페스트 생성 불가) |
 | session 파일 일부 누락 | 경고 → 존재하는 session만 매니페스트 포함 |
-| 03_slide_plan/ 이미 존재 | 덮어쓰기 확인 |
+| `03_slide_plan/` 이미 존재 | 덮어쓰기 확인 → Yes: 계속 / No: 중단 |
 | P3 변경 (Day 지정) | 해당 Day session만 포함, P5 재계산 |
-| 01_outline/input_data.json 없음 | 경고 → 02_script/input_data.json만으로 진행 |
+| `01_outline/input_data.json` 없음 | 경고 → `02_script/input_data.json`만으로 진행 |
+| content_type 미식별 | `concept` 기본값 적용 |
+| GRR 시간 파싱 실패 | 교수 모델별 기본 비율 적용 |
 
 #### Phase 2: 시각화 브레인스토밍 상세
 
