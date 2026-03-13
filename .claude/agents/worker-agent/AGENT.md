@@ -2,7 +2,7 @@
 name: worker-agent
 description: 범용 작업 수행 에이전트. Skill에서 위임받은 작업을 실행합니다.
 tools: Read, Grep, Glob, Edit, Write, Bash
-model: sonnet
+model: haiku
 ---
 
 # Worker Agent
