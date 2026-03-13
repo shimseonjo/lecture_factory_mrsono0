@@ -596,7 +596,7 @@ Phase 6의 차시별 독립 파일을 블록 → 전체로 병합합니다.
 | 1 | 입력 수집 | input-agent | 교안 3파일 로드 + session 매니페스트 생성, P1~P5 자동 결정(도구/톤/범위/밀도/GRR 기반 슬라이드 수), AskUserQuestion 1회 → input_data.json |
 | 2 | 브레인스토밍 | brainstorm-agent | Session 시드 추출(5유형), 4기법(AE변환/6W매핑/범위전환/인터랙션설계) 발산, 2관점(학습자대변인/시간관리자) 검증 → brainstorm_result.md (§1~§7: AE구조/시각화/레이아웃/인터랙션/코드워크스루/Mayer/Decision) |
 | 3 | 구조 설계 | architecture-agent | Middle-out 설계: GRR 1차+콘텐츠 2차 병합 슬라이드 수 결정, 12유형 배정(AE I Do≥80%), GRR 순서+Mayer 분절, 시간 가중 배분, 7항목 검증 → architecture.md (§1~§9) |
-| 4 | 기획안 작성 | writer-agent | slide-plan-template.md 기반, 슬라이드별 목적/레이아웃/콘텐츠/시각자료 |
+| 4 | 기획안 작성 | writer-agent | GAIDE 5단계 + 세션별 분할, architecture §3 슬라이드 행을 1:1로 4레이어 명세(CONTENT/VISUAL/SPEAKER_NOTE/IMPL_HINT, 25~55줄)로 확장, session 파일 콘텐츠 추출(8패턴), GATE-4 검증 후 병합 → slide_plan.md (§1~§8) |
 | 5 | 품질 검토 | review-agent | 정보 밀도, 시각 계층, 학습목표 정렬, 슬라이드 수 적절성 |
 
 **설계 원칙**:
@@ -1165,7 +1165,7 @@ lectures/
 | 프레임워크 | 적용 워크플로우 | 핵심 원칙 |
 |-----------|--------------|----------|
 | **Backward Design** | 구성안, 교안 | 학습결과 → 평가 → 학습경험 역순 설계 |
-| **GAIDE** | 구성안, 교안 | Setup → 초안 → 매크로 정제 → 마이크로 정제 → 통합 |
+| **GAIDE** | 구성안, 교안, 슬기획 | Setup → 초안 → 매크로 정제 → 마이크로 정제 → 통합 |
 | **Gagne 9사태** | 교안 | 주의획득 → 목표고지 → ... → 파지와 전이 촉진 (체크리스트 적용) |
 | **Hunter 6단계** | 교안 (직접교수법) | 목표 → 정보제공 → 시범 → 안내연습 → 독립연습 → 정리 |
 | **PBL 6단계** | 교안 (문제기반학습) | 문제제시 → 탐구계획 → 탐구수행 → 해결안개발 → 발표공유 → 성찰 |
@@ -1191,6 +1191,9 @@ lectures/
 | **Progressive Disclosure** | 슬라이드 기획 Phase 2 | v-click, Fragment, 줄별 하이라이트, Magic Move — slide_tool별 인터랙션 매핑 + marp 대체 전략 (분절 슬라이드) |
 | **GRR 시각화 밀도 전략** | 슬라이드 기획 Phase 2 | I Do→풍부 시각(개념·코드·다이어그램), We Do→참여형(발문·부분공개), You Do→최소(과제·체크리스트) |
 | **Presentation Zen SNR** | 슬라이드 기획 Phase 2 | 신호 대 소음 비율 최대화 — 학습 무관 장식 제거, 핵심 정보 시각 강조 |
+| **4레이어 슬라이드 명세** | 슬라이드 기획 Phase 4 | CONTENT(AE Assertion+Evidence) + VISUAL(레이아웃+다이어그램) + SPEAKER_NOTE(발화큐+시간큐+전환) + IMPL_HINT(frontmatter+directive+interaction) — 슬라이드당 25~55줄 제작 지시서 |
+| **Session 콘텐츠 추출 8패턴** | 슬라이드 기획 Phase 4 | 발화문(`> "..."`)→발화큐, 코드→CONTENT, 발문(`❓`)→인터랙션, 활동(`📋`)→실습, 전환(`🔄`)→전환지시, 비유→시각화, 시연→데모, 시간(`⏱️`)→시간큐 |
+| **GATE-4 검증 6항목** | 슬라이드 기획 Phase 4 | 파일 존재 + 슬라이드 수 일치 + 시간 합산 + AE 적용률 + 세션 완전성 + §1~§8 완전성 |
 
 ---
 
