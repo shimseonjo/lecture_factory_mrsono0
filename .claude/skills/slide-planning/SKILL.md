@@ -291,9 +291,132 @@ GATE-4 실패 시 → 실패 항목 보고 후 사용자에게 확인 요청
 
 ---
 
-### Phase 5: 품질 검토 → review-agent (정보 밀도, 시각 계층, 학습목표 정렬)
+### Phase 5: 품질 검토 → review-agent (AE 구조, Mayer 원칙, GRR 밀도, 도구 구현)
 
-<!-- TODO: Phase 5 오케스트레이터 로직 구현 예정 -->
+Phase 5는 GATE-4를 통과한 기획안의 **품질**을 검증한다. 세션별 검토 → 통합 검토 → 판정 → (필요 시) 재작성 루프로 구성한다.
+
+#### Step 5-0: 검토 범위 결정
+
+```
+1. Read `{output_dir}/input_data.json` → session_manifest 로드
+2. session_manifest의 세션 목록 확정 → 세션별 검토 순서 결정
+3. source_script.lecture_root 확인 → session 파일 경로 확정
+```
+
+#### Step 5-1: 세션별 검토 (session_manifest 순서대로 순차 호출)
+
+**Agent 호출** (세션별 반복):
+- **subagent_type**: `review-agent`
+- **prompt**:
+
+```
+슬라이드 기획 워크플로우의 Phase 5 품질 검토를 수행하세요.
+
+**지시사항**: `.claude/agents/review-agent/AGENT.md`를 읽고 라우팅에 따라 `slide-planning-review.md`를 로드하여 따르세요.
+
+**모드**: 세션별 검토 모드 — 세션 {session_id}
+**실행 Step**: Step 0(입력 로드) + Step 1(D-1~D-7) + Step 2(G-1~G-7) + Step 3(T-1~T-3) + Step 4(C-1~C-8) + Step 5(I-1~I-7) + Step 6(세션 판정)
+
+**세션 정보**:
+  - session_id: {session_id}
+  - title: {title}
+  - duration_min: {duration_min}
+  - slides: {slides_count}
+  - content_type: {content_type}
+  - slo: {slo}
+  - grr: {grr_breakdown}
+
+**입력 경로**:
+  - `{output_dir}/slides_{session_id}.md` — 검증 대상
+  - `{output_dir}/architecture.md` — §3 슬라이드 골격 기준
+  - `{output_dir}/brainstorm_result.md` — §1~§5 시각화 소재
+  - `{output_dir}/input_data.json` — slide_config, session_manifest
+  - session 파일: `{source_script.lecture_root}/02_script/session_{session_id}.md`
+  - 템플릿: `.claude/templates/slide-plan-template.md`
+
+**산출물**: `{output_dir}/_review_session_{session_id}.md`
+```
+
+**완료 확인**: Glob `{output_dir}/_review_session_{session_id}.md` → 파일 존재 + 판정(PASS/CONDITIONAL PASS/REVISION REQUIRED) 포함 확인
+
+#### Step 5-2: 통합 검토
+
+모든 세션별 검토 완료 후, slide_plan.md 전체의 구조 완전성과 세션 간 일관성을 검증한다.
+
+**Agent 호출**:
+- **subagent_type**: `review-agent`
+- **prompt**:
+
+```
+슬라이드 기획 워크플로우의 Phase 5 품질 검토를 수행하세요.
+
+**지시사항**: `.claude/agents/review-agent/AGENT.md`를 읽고 라우팅에 따라 `slide-planning-review.md`를 로드하여 따르세요.
+
+**모드**: 통합 검토 모드
+**실행 Step**: Step 0(입력 로드) + Step 1(S-1~S-6) + Step 2(크로스 세션 일관성) + Step 3(T-4~T-6 집계 정합) + Step 4(통합 판정)
+
+**입력 경로**:
+  - `{output_dir}/slide_plan.md` — 병합된 기획안
+  - `{output_dir}/_review_session_*.md` — 세션별 검토 결과 전부
+  - `{output_dir}/architecture.md` — 구조 기준
+  - `{output_dir}/input_data.json` — session_manifest
+
+**산출물**: `{output_dir}/quality_review.md`
+```
+
+**완료 확인**:
+1. Glob `{output_dir}/quality_review.md` → 파일 존재 확인
+2. Read → 최종 판정(PASS/CONDITIONAL PASS/REVISION REQUIRED) 확인
+3. 검증 항목 41개 결과 존재 확인
+
+#### Step 5-3: GATE-5 판정
+
+```
+1. Read `{output_dir}/quality_review.md` → 최종 판정 추출
+2. 판정별 후속 조치:
+   - PASS → Phase 5 완료. 사용자에게 완료 보고
+   - CONDITIONAL PASS → 사용자에게 Minor 위반 목록 보고. "수정 진행/현재 상태 유지" 선택 요청
+   - REVISION REQUIRED → Step 5-4 재작성 루프 진행
+```
+
+#### Step 5-4: 재작성 루프 (최대 1회)
+
+REVISION REQUIRED 판정 시, Major 위반이 있는 세션만 재작성한다.
+
+```
+1. quality_review.md §3 Major 위반에서 해당 세션 ID 목록 추출
+2. 해당 세션별로 writer-agent revision 모드 호출:
+```
+
+**Agent 호출** (Major 위반 세션별 반복):
+- **subagent_type**: `writer-agent`
+- **prompt**:
+
+```
+슬라이드 기획 워크플로우의 Phase 4 기획안 작성을 수행하세요.
+
+**지시사항**: `.claude/agents/writer-agent/AGENT.md`를 읽고 라우팅에 따라 `slide-planning-write.md`를 로드하여 따르세요.
+
+**모드**: revision (세션 재작성)
+
+**입력 경로**:
+  - `{output_dir}/slides_{session_id}.md` — 현재 파일
+  - `{output_dir}/_review_session_{session_id}.md` — Major 위반 + 수정 가이드
+  - `{output_dir}/architecture.md` — §3 기준
+  - `{output_dir}/input_data.json` — slide_config
+
+**산출물**: `{output_dir}/slides_{session_id}.md` (전체 Write 교체)
+```
+
+재작성 완료 후:
+
+```
+3. 재작성된 세션만 Step 5-1 세션별 검토 재실행
+4. Step 5-2 통합 검토 재실행
+5. Step 5-3 GATE-5 재판정
+   - PASS/CONDITIONAL PASS → Phase 5 완료
+   - REVISION REQUIRED (2회차) → 사용자에게 보고 후 중단
+```
 
 ---
 
@@ -312,5 +435,6 @@ lectures/YYYY-MM-DD_{강의명}/03_slide_plan/
 ├── slides_D{day}-{num}.md       # Phase 4: 세션별 슬라이드 명세 ★ (×세션 수)
 ├── _plan_footer.md              # Phase 4: §5~§8 (유형 분포+인터랙션+코드+제작 참고)
 ├── slide_plan.md                # Phase 4: 최종 기획안 (병합) ★
-└── quality_review.md            # Phase 5: 품질 검토
+├── _review_session_{id}.md      # Phase 5: 세션별 검토 결과 (×세션 수)
+└── quality_review.md            # Phase 5: 최종 품질 검토 ★
 ```
