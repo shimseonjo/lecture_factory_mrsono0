@@ -13,7 +13,7 @@
 
 | 차원 | 교안 Phase 7 | 슬라이드 기획 Phase 5 |
 |------|-------------|---------------------|
-| 검증 대상 | `lecture_script.md` (실행 문서 — 발화문+행동지시) | `slide_plan.md` (제작 지시서 — 4레이어 명세) |
+| 검증 대상 | `block_D*.md` (교안+대본 통합 블록) + `session_D*.md` (교안 콘텐츠) | `slide_plan.md` (제작 지시서 — 4레이어 명세) |
 | 검증 기준 파일 수 | 7개 | 5개 (architecture.md + brainstorm_result.md + input_data.json + session 파일들 + slide-plan-template.md) |
 | 핵심 분량 | §4 교시당 80~120줄, 전체 4,000~6,000행 | §4 슬라이드당 25~55줄, 전체 2,000~8,000행 |
 | 고유 검증 영역 | Gagne, GRR, 2-레이어, Think-Aloud, CMU 3점, 15분 분절, 발화문 자연성 | AE 구조, 4레이어 완전성, Mayer 원칙, 6×6, Progressive Disclosure, 도구 구현 |

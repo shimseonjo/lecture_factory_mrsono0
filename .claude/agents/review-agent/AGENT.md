@@ -30,8 +30,9 @@ model: sonnet[1m]
 | 키워드 | Read할 파일 |
 |--------|-----------|
 | 강의구성안 + Phase 7 | `outline-review.md` |
-| 강의교안 + Phase 7 | `script-review.md` |
-| 강의교안 + Phase 8 (통합 검토) | `script-review.md` |
+| 강의교안 + Phase 7 (교안 검토) | `script-review.md` |
+| 강의교안 + Phase 9 (대본 검토) | `script-review.md` |
+| 강의교안 + Phase 10 (통합 검토) | `script-review.md` |
 | 슬라이드 기획 + Phase 5 (세션별 검토) | `slide-planning-review.md` |
 | 슬라이드 기획 + Phase 5 (통합 검토) | `slide-planning-review.md` |
 

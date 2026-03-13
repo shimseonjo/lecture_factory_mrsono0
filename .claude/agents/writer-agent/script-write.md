@@ -1,4 +1,8 @@
-# 강의교안 작성 (Phase 6) 세부 워크플로우
+# [DEPRECATED] 강의교안 작성 (Phase 6) 세부 워크플로우
+
+> **이 파일은 더 이상 사용되지 않습니다.**
+> - 교안 콘텐츠 작성: `script-content.md` (Phase 6)
+> - 강사대본 생성: `script-narration.md` (Phase 8)
 
 ### 설계 원칙
 

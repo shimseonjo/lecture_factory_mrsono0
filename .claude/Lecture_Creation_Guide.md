@@ -184,7 +184,7 @@ Phase 5(아키텍처 설계)에서 일별 시간표를 자동 생성하여 Phase
 폴더와 파일 이름은 `단계번호_단계이름` 패턴을 따릅니다.
 
 - **워크플로우 폴더**: `{단계번호}_{단계이름}/` (예: `01_outline/`, `02_script/`, `03_slide_plan/`, `04_slides/`)
-- **최종 산출물**: `{워크플로우}_{유형}.md` (예: `lecture_outline.md`, `lecture_script.md`, `slide_plan.md`)
+- **최종 산출물**: `{워크플로우}_{유형}.md` (예: `lecture_outline.md`, `block_D{day}_{AM|PM}.md`, `slide_plan.md`)
 - **중간 산출물**: `{Phase역할}_{내용}.md` (예: `research_exploration.md`, `brainstorm_result.md`, `research_deep.md`)
 - **검토 중간**: `_review_step{N}.md` (구성안: N=1~4), `_review_block_{block_id}.md` (교안: 블록별)
 - 상세 파일 목록은 각 SKILL.md의 산출물 섹션 참조
@@ -210,9 +210,11 @@ Phase 5(아키텍처 설계)에서 일별 시간표를 자동 생성하여 Phase
 | 3 | 브레인스토밍 | brainstorm-agent | 4가지 발산 기법(HMW/SCAMPER/학제간융합/강제제약) → 발문(Bloom's×Socratic), 학습활동(GRR), 사례·훅, 설명 전략, Gagne 9사태, 오개념 해소 |
 | 4 | 심화 리서치 | research-agent | 브레인스토밍 기반 교수법 효과성 검증(효과 크기+맥락 전이+SLO 측정), 활동 보충(루브릭/발문/템플릿), 사실 확인 |
 | 5 | 교안 구조 설계 | architecture-agent | 교수 모델별 도입-전개-정리 비율, Gagne 9사태 적용, SLO별 형성평가 배정, 시간 배분 |
-| 6 | 차시별 교안 작성 | writer-agent | 동적 블록 분할 + **차시별 독립 파일(`session_*.md`)** 작성. full_script(L5) 완전 스크립트 — 교안(학습 내용) + 강사대본(발화문) + 발문 + 활동 + 평가문항. brainstorm 소재 필수 통합, 친절한 구어체 |
-| 7 | 블록별 품질 검토 | review-agent | 블록 단위 6영역 검증 루프 — REVISION_REQUIRED 시 해당 블록만 재작성(최대 1회). G(Gagne/GRR) + P(Bloom's/CMU) + T(시간) + C(Anti-Hallucination) + N(발화문 충실도/brainstorm 활용도) |
-| 8 | 병합 + 최종 검토 | review-agent | **2단계 병합**: session_*.md → block_*.md (1차) → lecture_script.md (2차). 구조 완전성(S) + 블록 간 전환 일관성 + SLO 커버리지 + 집계 정합 → `block_*.md` + `lecture_script.md` + `quality_review.md` |
+| 6 | 차시별 교안 작성 | writer-agent | 동적 블록 분할 + **차시별 독립 파일(`session_D{day}-{num}.md`)** 작성. 교안 콘텐츠 전용 — 학습 내용 + 발문 + 활동 + 평가문항. brainstorm 소재 필수 통합 |
+| 7 | 교안 검토 | review-agent | 블록 단위 6영역 검증 루프 — REVISION_REQUIRED 시 해당 블록만 재작성(최대 1회). G(Gagne/GRR) + P(Bloom's/CMU) + T(시간) + C(Anti-Hallucination) + N(발화문 충실도/brainstorm 활용도) |
+| 8 | 강사대본 생성 | writer-agent | 검토 완료된 session 교안 기반으로 **차시별 강사대본 파일(`narration_D{day}-{num}.md`)** 작성. 친절한 구어체 발화문 + Think-Aloud + Bridging Activity |
+| 9 | 대본 검토 | review-agent | 대본 품질 검증 — 발화문 자연성·충실도(N-1), brainstorm 소재 활용도(N-8), 교안-대본 정합성 |
+| 10 | 블록 통합 + 최종 검토 | review-agent | **블록 통합**: session+narration → `block_D{day}_{AM|PM}.md`. 구조 완전성(S) + 블록 간 전환 일관성 + SLO 커버리지 + 집계 정합 → `block_*.md` + `quality_review.md` |
 
 **적용 프레임워크**:
 - Madeline Hunter 6단계 (직접교수법)
@@ -490,13 +492,13 @@ Phase 6에서 결정한 블록 단위로 교안 품질을 검증하며, REVISION
 
 **구성안 Phase 7 vs 교안 Phase 7+8 핵심 차이**:
 
-| 차원 | 구성안 Phase 7 | 교안 Phase 7 (블록별) | 교안 Phase 8 (통합) |
+| 차원 | 구성안 Phase 7 | 교안 Phase 7 (블록별) | 교안 Phase 10 (통합) |
 |------|--------------|---------------------|-------------------|
-| 검증 대상 | `lecture_outline.md` 전체 | `lecture_script.md` 블록 범위 | `lecture_script.md` 전체 |
+| 검증 대상 | `lecture_outline.md` 전체 | `session_D{day}-{num}.md` 블록 범위 | `block_D{day}_{AM|PM}.md` 전체 |
 | 검증 항목 수 | 38개 (6영역) | ~44개 (5영역: G+P+T+C+N) | ~15개 (S+일관성) |
 | Step 수 | Step 0~5 | 블록 수만큼 반복 | 1회 |
 | 재작성 | 없음 | REVISION 시 writer-agent 재호출 (최대 1회) | 없음 |
-| 산출물 | `quality_review.md` | `_review_block_{block_id}.md` | `block_{block_id}.md` (블록별 독립 교안) + `quality_review.md` |
+| 산출물 | `quality_review.md` | `_review_block_{block_id}.md` | `block_D{day}_{AM|PM}.md` (블록별 통합) + `quality_review.md` |
 
 **블록별 검토 루프**:
 
@@ -538,23 +540,19 @@ for block in blocks:
 
 상세 워크플로우: `.claude/agents/review-agent/AGENT.md` 라우팅 → `script-review.md` 참조
 
-#### Phase 8: 2단계 병합 + 최종 검토 — session→block→lecture_script 병합 + 구조 완전성 + 블록 간 일관성
+#### Phase 10: 블록 통합 + 최종 검토 — session+narration → block 통합 + 구조 완전성 + 블록 간 일관성
 
-Phase 7 블록별 검토 완료 후, 전체 문서의 구조 완전성과 블록 간 일관성을 최종 검증합니다.
+Phase 9 대본 검토 완료 후, 교안과 대본을 블록 단위로 통합하고 전체 구조 완전성과 블록 간 일관성을 최종 검증합니다.
 
-**오케스트레이터 사전 처리 — 2단계 병합** (방향 역전: 추출 → 병합):
+**오케스트레이터 사전 처리 — 블록 통합** (session + narration → block):
 
-Phase 6의 차시별 독립 파일을 블록 → 전체로 병합합니다.
+Phase 6의 교안 파일과 Phase 8의 대본 파일을 블록 단위로 통합합니다.
 
-**1차 병합: session → block**:
-- 각 블록의 `session_D{day}-{num}.md` 파일들을 Read
-- Day 헤딩(`### Day {N}: {테마}`)을 삽입하고 세션들을 순서대로 결합
-- `block_D{day}_{AM|PM}.md`로 Write (블록 헤더 + 세션 교안 + 블록 요약)
-- 강사가 반일 단위(AM/PM)로 교안을 참조할 수 있는 독립 실행 문서
-
-**2차 병합: _header + block + _footer → lecture_script.md**:
-- `_header.md` (§1~§3) + `block_*.md` (§4 본문) + `_footer.md` (§5~§8)을 순서대로 결합
-- script-template.md 구조의 완전한 단일 `lecture_script.md` 생성
+**블록 통합: session + narration → block**:
+- 각 블록의 `session_D{day}-{num}.md`(교안)와 `narration_D{day}-{num}.md`(대본) 파일들을 Read
+- Day 헤딩(`### Day {N}: {테마}`)을 삽입하고 교안+대본을 차시 순서대로 결합
+- `block_D{day}_{AM|PM}.md`로 Write (블록 헤더 + 차시별 교안+대본 통합 + 블록 요약)
+- 강사가 반일 단위(AM/PM)로 교안과 대본을 함께 참조할 수 있는 독립 실행 문서
 
 **통합 검증 영역 (~15항목)**:
 
@@ -568,22 +566,21 @@ Phase 6의 차시별 독립 파일을 블록 → 전체로 병합합니다.
 | 용어·표기 통일 | 전체 문서 일관성 |
 
 **산출물**:
-- `02_script/block_D{day}_{AM|PM}.md` — 블록별 통합 교안 (1차 병합, 예: `block_D1_AM.md`, `block_D1_PM.md`, ...) — 강사가 반일 단위로 사용
-- `02_script/lecture_script.md` — 최종 통합 교안 (2차 병합) ★
+- `02_script/block_D{day}_{AM|PM}.md` — 블록별 교안+대본 통합 파일 (예: `block_D1_AM.md`, `block_D1_PM.md`, ...) — 강사가 반일 단위로 사용 ★
 - `02_script/quality_review.md` — 최종 품질 검토 (§1 검토 요약 → §2 검증 상세 → §3 Major → §4 Minor → §5 우수 → §6 수정 우선순위 → §7 최종 판정)
 
 **데이터 흐름**:
 ```
 구성안 3파일 로드 → input_data.json → research_exploration.md → brainstorm_result.md
 → research_deep.md → [context7_reference.md] → architecture.md
-→ [차시별 작성] _header.md + session_*.md + _footer.md → [블록별 검토] _review_block_*.md
-→ [1차 병합] block_*.md → [2차 병합] lecture_script.md → [통합 검토] quality_review.md
+→ [차시별 교안 작성] session_*.md → [교안 검토] _review_block_*.md
+→ [강사대본 생성] narration_*.md → [대본 검토] → [블록 통합] block_*.md → [최종 검토] quality_review.md
 ```
 - `context7_reference.md`: Phase 5 오케스트레이터가 Context7 MCP로 사전 수집 (기술 교육 시에만 생성)
-- `_review_block_{block_id}.md`: Phase 7 블록별 검토 결과 (블록 수만큼 동적 생성)
-- `block_{block_id}.md`: Phase 8 블록별 독립 산출물 (블록 수만큼 동적 생성)
+- `_review_block_{block_id}.md`: Phase 7 교안 블록별 검토 결과 (블록 수만큼 동적 생성)
+- `block_D{day}_{AM|PM}.md`: Phase 10 블록 통합 산출물 (블록 수만큼 동적 생성) ★
 
-**산출물**: `lectures/YYYY-MM-DD_{강의명}/02_script/lecture_script.md`
+**산출물**: `lectures/YYYY-MM-DD_{강의명}/02_script/block_D{day}_{AM|PM}.md`
 
 ---
 
@@ -632,10 +629,10 @@ Phase 6의 차시별 독립 파일을 블록 → 전체로 병합합니다.
 
 교안 폴더 탐색 로직:
 ```
-Glob `lectures/*/02_script/lecture_script.md` 스캔
+Glob `lectures/*/02_script/block_D*.md` 스캔
 → 0개: 에러 "교안이 없습니다. /lecture-script를 먼저 실행하세요." → 중단
-→ 1개: 자동 선택 후 확인 "'{폴더명}'의 교안을 사용합니다. 맞습니까?"
-→ 2개+: 사용자 선택 (폴더명 목록, 최신순 정렬)
+→ 1개+: 폴더 자동 선택 후 확인 "'{폴더명}'의 교안을 사용합니다. 맞습니까?"
+→ 2폴더+: 사용자 선택 (폴더명 목록, 최신순 정렬)
 ```
 
 로드 대상 3파일:
@@ -708,7 +705,7 @@ GRR 구간별 슬라이드 밀도 (장/분):
 | 상황 | 처리 |
 |------|------|
 | 교안 0개 | 에러 → `/lecture-script` 먼저 실행 안내 → 중단 |
-| `lecture_script.md` 없음 | 에러 → "교안이 완성되지 않았습니다." → 중단 |
+| `block_D*.md` 없음 | 에러 → "교안이 완성되지 않았습니다." → 중단 |
 | `architecture.md` 없음 | 에러 → 중단 (매니페스트 생성 불가) |
 | session 파일 일부 누락 | 경고 → 존재하는 session만 매니페스트 포함 |
 | `03_slide_plan/` 이미 존재 | 덮어쓰기 확인 → Yes: 계속 / No: 중단 |
@@ -1034,7 +1031,7 @@ Step 0: 입력 로드 + 검증 (Setup)
 
 | 차원 | 교안 Phase 7 | 슬라이드 기획 Phase 5 |
 |------|-------------|---------------------|
-| 검증 대상 | `lecture_script.md` (실행 문서) | `slide_plan.md` (제작 지시서) |
+| 검증 대상 | `session_D{day}-{num}.md` (교안 블록) | `slide_plan.md` (제작 지시서) |
 | 고유 검증 영역 | Gagne, GRR, 2-레이어, Think-Aloud | **AE 구조, 4레이어, Mayer, 도구 구현** |
 | 검증 항목 수 | 51개 (S:7+G:8+P:7+T:8+C:12+N:9) | **41개** (S:6+D:7+G:7+T:6+C:8+I:7) |
 | 검토 모드 | 블록별 + 통합 | **세션별 + 통합** |
@@ -1129,9 +1126,9 @@ lectures/
     │   ├── [context7_block_{block_id}.md] # Phase 6 블록별 정밀 기술 문서 (기술 교육 시)
     │   ├── [context7_verify_{block_id}.md]# Phase 7 블록별 코드 검증 기준 (기술 교육 시)
     │   ├── _review_block_{block_id}.md    # Phase 7 블록별 검토 결과 (동적)
-    │   ├── block_D{day}_{AM|PM}.md        # Phase 8 블록별 통합 (1차 병합) ★
-    │   ├── lecture_script.md              # Phase 8 최종 통합 (2차 병합) ★
-    │   └── quality_review.md              # Phase 8 최종 ★
+    │   ├── narration_D1-1.md ~ D{N}-{M}.md# Phase 8 차시별 강사대본 ★
+    │   ├── block_D{day}_{AM|PM}.md        # Phase 10 블록 통합 (교안+대본) ★
+    │   └── quality_review.md              # Phase 10 최종 ★
     │
     ├── 03_slide_plan/                     # /slide-planning 산출물 (Phase 1~5 구현)
     │   ├── input_data.json                # Phase 1 최종

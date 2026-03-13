@@ -13,7 +13,7 @@
 
 | 모드 | Phase | 범위 | 검증 영역 | 산출물 |
 |------|-------|------|----------|--------|
-| **교안 검토** | Phase 7 | `session_D{day}-{num}.md` (교안 콘텐츠) | G+T+C+EX (~35항목) | `_review_block_{block_id}.md` |
+| **교안 검토** | Phase 7 | `session_D{day}-{num}.md` (교안 콘텐츠) | G+T+C+EX (~35항목) | `_review_content_{block_id}.md` |
 | **대본 검토** | Phase 9 | `narration_D{day}-{num}.md` (강사 대본) | NR (8항목) | `_review_narration_{block_id}.md` |
 | **통합 검토** | Phase 10 | `block_D{day}_{AM\|PM}.md` (블록 단위) | S+블록간일관성 (~15항목) | `quality_review.md` |
 
@@ -39,10 +39,10 @@ Step 0: 입력 로드
   │
   ├── Step 5: 교안 예시 품질 검증 (EX-1~EX-4: 4항목)
   │
-  └── Step 6: 블록 판정 통합 → _review_block_{block_id}.md Write
+  └── Step 6: 블록 판정 통합 → _review_content_{block_id}.md Write
 ```
 
-**단일 파일 Write 패턴**: 중간 파일 없이 `_review_block_{block_id}.md`에 단계별 결과를 순차 Write한다.
+**단일 파일 Write 패턴**: 중간 파일 없이 `_review_content_{block_id}.md`에 단계별 결과를 순차 Write한다.
 
 ### Step 0: 입력 로드
 
@@ -85,7 +85,7 @@ Step 0: 입력 로드
 |------|------|
 | 입력 | session_D{day}-{num}.md, input_data.json, 02_script/architecture.md |
 | 도구 | Read, Write |
-| 산출물 | `_review_block_{block_id}.md` (누적 Write) |
+| 산출물 | `_review_content_{block_id}.md` (누적 Write) |
 
 이 Step은 교안 콘텐츠의 **수업 구조 완전성**을 검증한다.
 
@@ -106,7 +106,7 @@ Step 0: 입력 로드
 | 4 | G-4 | GRR 시간 비율 현실성 | 직접교수법 기준: I Do ≤22%, We Do 22~28%, You Do ≥28%. 교수 모델별 기준 적용 | Minor (기준 범위 소폭 이탈) |
 | 5 | G-7 | 확인 활동 삽입 여부 | I Do 세그먼트 내 15분 초과 시 확인 활동(Think-Pair-Share, 확인 발문, 마이크로 실습) 삽입 존재 여부 | Major (15분 초과 + 확인 활동 미삽입), Minor (14~15분 경계 — 확인 활동 권장) |
 
-**동작**: G-1~G-4, G-7 검증 결과를 `_review_block_{block_id}.md`에 Write한다.
+**동작**: G-1~G-4, G-7 검증 결과를 `_review_content_{block_id}.md`에 Write한다.
 
 ---
 
@@ -116,7 +116,7 @@ Step 0: 입력 로드
 |------|------|
 | 입력 | session_D{day}-{num}.md, 02_script/architecture.md, input_data.json, 01_outline/architecture.md |
 | 도구 | Read, Write |
-| 산출물 | `_review_block_{block_id}.md` (누적 Write) |
+| 산출물 | `_review_content_{block_id}.md` (누적 Write) |
 
 **체크리스트**:
 
@@ -131,7 +131,7 @@ Step 0: 입력 로드
 | 7 | T-7 | 시간 예산 일치 | 교시 헤더의 교수 모델 및 시간 구조 값이 input_data.json의 teaching_model, time_ratio와 일치 | Major (불일치) |
 | 8 | T-8 | 시간큐 연속성 | `⏱️` 경과/잔여 시간큐가 교시 내에서 시간 순서대로 증가하며, 마지막 시간큐의 경과 시간이 session_minutes와 ±2분 이내 | Minor (시간큐 역행 또는 누락) |
 
-**동작**: T-1~T-8 검증 결과를 `_review_block_{block_id}.md`에 누적 Write한다.
+**동작**: T-1~T-8 검증 결과를 `_review_content_{block_id}.md`에 누적 Write한다.
 
 ---
 
@@ -141,7 +141,7 @@ Step 0: 입력 로드
 |------|------|
 | 입력 | session_D{day}-{num}.md, 02_script/architecture.md, 02_script/brainstorm_result.md, 02_script/research_deep.md, 02_script/input_data.json, 01_outline/lecture_outline.md, 01_outline/architecture.md, context7_verify_{block_id}.md (존재 시) |
 | 도구 | Read, Write |
-| 산출물 | `_review_block_{block_id}.md` (누적 Write) |
+| 산출물 | `_review_content_{block_id}.md` (누적 Write) |
 
 **체크리스트**:
 
@@ -160,7 +160,7 @@ Step 0: 입력 로드
 | 11 | C-11 | 플레이스홀더 잔존 검출 | `[코드 시연: ...]`, `[코드 예시]`, `[데모: ...]` 같은 코드 대체 플레이스홀더 존재 여부 | Major (코드 블록 없이 플레이스홀더만 있는 경우), Minor (플레이스홀더 + 코드 블록 병존) |
 | 12 | C-12 | `{중괄호}` 플레이스홀더 검출 | `{중괄호}` 플레이스홀더 잔존 검출. 학습자 실습용 양식 내부의 `[직접 입력]`은 제외 | Major (5개+), Minor (1~4개) |
 
-**동작**: C-1~C-12 검증 결과를 `_review_block_{block_id}.md`에 누적 Write한다.
+**동작**: C-1~C-12 검증 결과를 `_review_content_{block_id}.md`에 누적 Write한다.
 
 ---
 
@@ -170,7 +170,7 @@ Step 0: 입력 로드
 |------|------|
 | 입력 | session_D{day}-{num}.md, 02_script/brainstorm_result.md, 02_script/input_data.json |
 | 도구 | Read, Write |
-| 산출물 | `_review_block_{block_id}.md` (누적 Write) |
+| 산출물 | `_review_content_{block_id}.md` (누적 Write) |
 
 이 Step은 교안 콘텐츠의 **예시 완전성과 오개념 교정** 품질을 검증한다.
 
@@ -183,7 +183,7 @@ Step 0: 입력 로드
 | 3 | EX-3 | 코드 예제 완전성 | 50줄 이상 코드 블록이 있을 때 `code_examples_D*.md` 별도 파일 존재 및 해당 교시에 참조 링크 존재 | Minor (50줄+ 코드가 인라인에만 존재 — 별도 파일 없음) |
 | 4 | EX-4 | 오개념 교정 반영 | brainstorm §6 오개념 항목이 교안의 해당 차시 오개념 교정 섹션에 반영되었는지 | Major (brainstorm §6 오개념이 교안에 미반영), Minor (오개념 교정 설명 미흡) |
 
-**동작**: EX-1~EX-4 검증 결과를 `_review_block_{block_id}.md`에 누적 Write한다.
+**동작**: EX-1~EX-4 검증 결과를 `_review_content_{block_id}.md`에 누적 Write한다.
 
 ---
 
@@ -191,21 +191,21 @@ Step 0: 입력 로드
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `_review_block_{block_id}.md` (Step 2~5 결과 누적본) |
+| 입력 | `_review_content_{block_id}.md` (Step 2~5 결과 누적본) |
 | 도구 | Read, Write |
-| 산출물 | `_review_block_{block_id}.md` (판정 섹션 추가 Write) |
+| 산출물 | `_review_content_{block_id}.md` (판정 섹션 추가 Write) |
 
 **동작**:
 
 1. 누적된 검증 결과에서 Major/Minor 위반 수 집계
 2. **판정 결정**: `shared/judgment-criteria.md`의 판정 기준에 따라 판정
-3. `_review_block_{block_id}.md`에 판정 섹션 추가 Write
+3. `_review_content_{block_id}.md`에 판정 섹션 추가 Write
 
 ---
 
 ### 교안 검토 산출물 구조
 
-`_review_block_{block_id}.md` 파일 구조:
+`_review_content_{block_id}.md` 파일 구조:
 
 ```markdown
 # 교안 블록 검토 결과 — {block_id}
@@ -398,7 +398,7 @@ Step 0: 입력 로드
 ```
 Step 0: 입력 로드
   │     block_D{day}_{AM|PM}.md 파일들 (검증 대상)
-  │     + _review_block_*.md 전부
+  │     + _review_content_*.md 전부
   │     + _review_narration_*.md 전부 (존재 시)
   │     + 기준 파일들
   │
@@ -420,7 +420,7 @@ Step 0: 입력 로드
 **동작**:
 
 1. 전체 `block_D{day}_{AM|PM}.md` 파일들을 Read
-2. `_review_block_*.md` 전부 Read
+2. `_review_content_*.md` 전부 Read
 3. `_review_narration_*.md` 전부 Read (존재 시)
 4. 기준 파일 Read: `02_script/architecture.md`, `02_script/input_data.json`, `01_outline/lecture_outline.md`, `01_outline/architecture.md`
 
@@ -470,7 +470,7 @@ Step 0: 입력 로드
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `_review_step1.md`, `_review_block_*.md`, `_review_narration_*.md` |
+| 입력 | `_review_step1.md`, `_review_content_*.md`, `_review_narration_*.md` |
 | 도구 | Read, Write |
 | 산출물 | `{output_dir}/quality_review.md` ★ |
 
@@ -496,7 +496,7 @@ Step 0: 입력 로드
 | 검토 대상 | block_D{day}_{AM\|PM}.md (블록 단위 통합) |
 | 검토 기준 | 구조 완전성 + 블록 간 일관성 + SLO 커버리지 + 집계 정합 + 용어 통일 |
 | 검증 항목 수 | ~15개 (S:7 + 블록간일관성·커버리지·집계·용어) |
-| 참조 블록 검토 수 | {N}개 블록 (_review_block_*.md) |
+| 참조 블록 검토 수 | {N}개 블록 (_review_content_*.md) |
 | 참조 대본 검토 수 | {N}개 블록 (_review_narration_*.md) |
 | 판정 | {PASS / CONDITIONAL PASS / REVISION REQUIRED} |
 
@@ -519,7 +519,7 @@ Step 0: 입력 로드
 
 | 블록 | 산출물 파일 | 판정 | Major | Minor |
 |------|-----------|------|-------|-------|
-| {block_id} | _review_block_{block_id}.md | {판정} | {N} | {N} |
+| {block_id} | _review_content_{block_id}.md | {판정} | {N} | {N} |
 
 ---
 
@@ -577,7 +577,7 @@ Step 0: 입력 로드
 
 ```
 {output_dir}/
-├── _review_block_{block_id}.md      # 교안 검토 (블록 수만큼)
+├── _review_content_{block_id}.md      # 교안 검토 (블록 수만큼)
 ├── _review_narration_{block_id}.md  # 대본 검토 (블록 수만큼, Phase 9)
 ├── _review_step1.md                 # 통합 검토 시: 구조 완전성 결과 (중간)
 └── quality_review.md                # 최종 품질 검토 결과 ★
