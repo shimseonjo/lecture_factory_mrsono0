@@ -3,6 +3,13 @@
 <!-- Phase 6(writer-agent)가 교안 콘텐츠를 작성할 때 사용하는 구조 템플릿 -->
 <!-- 이 템플릿은 학습 콘텐츠 전용: 강사 발화문(> "...")은 포함하지 않음 -->
 <!-- 적용 방법론: GRR (I Do / We Do / You Do) 1개만 -->
+<!--
+  [CRITICAL] 이 템플릿의 모든 {중괄호} placeholder를 실제 내용으로 교체하여 작성한다.
+  - placeholder를 그대로 남기거나 고정 문구로 대체하면 GATE-6 FAIL
+  - "구성안 비유 체계 참조." 같은 참조 문구로 대체해도 GATE-6 FAIL
+  - 각 섹션은 brainstorm/research/context7의 실제 소재를 사용하여 풍부하게 작성
+  - hands-on ≥ 150줄, concept ≥ 120줄, activity ≥ 100줄 (최소 분량)
+-->
 
 ---
 

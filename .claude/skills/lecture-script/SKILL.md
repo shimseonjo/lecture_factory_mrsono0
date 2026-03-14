@@ -378,35 +378,32 @@ prompt: |
   **제약**: 도구 Read, Write, Glob만 사용. 외부 검색 없음. Agent 중첩 금지.
 ```
 
-**블록별 분할 모드** (total_sessions > 10):
+**세션별 분할 모드** (total_sessions > 10):
 
-오케스트레이터가 Part별로 writer-agent를 순차 호출한다.
-블록 수와 경계는 architecture.md 시간표에서 동적으로 결정된다.
-**산출물은 차시별 독립 파일(`session_D{day}-{num}.md`)로 생성한다** (Bottom-Up 3계층).
+오케스트레이터가 세션별로 writer-agent를 순차 호출한다.
+**1회 호출에 1개 session 파일만 Write한다** — 콘텐츠 생성 집중도 확보.
 
 - Part 0/{N}: `범위: §1~§3`, `산출물: _header.md` (Write 신규)
-- Part 1~{B}/{N}: `범위: §4 블록 {block_id} ({session_list})`, `산출물: session_D{day}-{num}.md × 세션 수` (각각 Write 신규)
+- Part 1~{S}/{N}: `범위: §4 세션 {session_id} (1교시)`, `산출물: session_D{day}-{num}.md` (Write 신규)
 - Part {N}/{N}: `범위: §5~§8`, `산출물: _footer.md` (Write 신규)
 
-**블록별 Context7 보강 쿼리** (블록별 분할 모드):
+**세션별 Context7 보강 쿼리** (세션별 분할 모드):
 
-각 블록(Part 1~{B}) writer-agent 호출 **직전에** 오케스트레이터가 수행:
-
-**스킵 판단**: 해당 블록에 content_type == "hands-on" 차시가 0개이면 이 블록의 context7 보강 스킵.
+각 세션 writer-agent 호출 **직전에** 오케스트레이터가 수행 (해당 세션이 content_type == "hands-on"인 경우만):
 
 1. `context7_reference.md` §1 Library ID Cache에서 캐시된 libraryId 조회
-   - `context7_reference.md` 미존재 시: 이 블록에 hands-on 차시가 있으면 경고 출력 후 WebSearch 폴백으로 진행
-2. `architecture.md` §3에서 해당 블록의 **hands-on 세션들의** 기술 키워드 추출 (하위 주제명, 다루는 API/도구)
+   - `context7_reference.md` 미존재 시: 해당 세션이 hands-on이면 경고 출력 후 WebSearch 폴백으로 진행
+2. `architecture.md` §3에서 해당 세션의 기술 키워드 추출 (하위 주제명, 다루는 API/도구)
 3. 각 키워드에 대해 `query-docs`(libraryId, query=영어_기술_키워드) 호출
    - query 작성: Phase 5와 동일 가이드 — 구체적 영어 기술 키워드
-   - 예: 블록 D1_AM에 "Spring Boot project setup" 세션이 있으면 `query="spring initializr project structure dependencies"`
-4. 수집 결과를 `{output_dir}/context7_block_{block_id}.md`에 저장
-   - 구조: 블록 ID, 대상 세션 목록, 라이브러리별 쿼리 결과 (API 시그니처, 코드 스니펫, 관련 문서)
+   - 예: 세션 D1-1에 "Spring Boot project setup" 주제가 있으면 `query="spring initializr project structure dependencies"`
+4. 수집 결과를 `{output_dir}/context7_session_{session_id}.md`에 저장
+   - 구조: 세션 ID, 라이브러리별 쿼리 결과 (API 시그니처, 코드 스니펫, 관련 문서)
 5. writer-agent 호출 prompt의 입력에 추가
 
 **제약**:
-- 블록당 `query-docs` 최대 2회, Phase 6 전체 최대 12회
-- 해당 블록에 hands-on 차시 0개이면 스킵
+- 세션당 `query-docs` 최대 2회, Phase 6 전체 최대 12회
+- 해당 세션이 content_type == "hands-on"이 아니면 스킵
 - 단일 모드(`total_sessions ≤ 10`)에서는 Phase 5의 `context7_reference.md`로 충분하므로 스킵
 
 ```
@@ -414,42 +411,65 @@ subagent_type: writer-agent
 prompt: |
   이전 Phase 산출물을 통합하여 강의교안 콘텐츠를 작성하세요.
   ★ 이 Phase에서는 학습 콘텐츠만 작성합니다. 강사 발화문(> "...")은 작성하지 않습니다.
+  ★ 이 호출에서는 1개 교시만 작성합니다.
 
   **지시사항**: `.claude/agents/writer-agent/AGENT.md`를 읽고
   라우팅에 따라 `script-content.md`를 로드하여 따르세요.
 
   **모드**: part ({K}/{N})
-  **범위**: §4 블록 {block_id} ({session_list})
-  **블록 세션**: {해당 블록의 세션 목록}
-  **산출물 방식**: 차시별 독립 파일 Write (Bottom-Up 3계층)
-  **Overlap 컨텍스트**: {이전 블록 마지막 차시의 정리 섹션 50~100줄, 첫 블록이면 "없음"}
+  **범위**: §4 세션 {session_id} (1교시)
+  **산출물 방식**: 1개 차시 독립 파일 Write
+  **Overlap 컨텍스트**: {이전 세션의 정리 섹션 30~50줄, 첫 세션이면 "없음"}
 
-  **입력**:
+  **이 교시의 입력 (발췌)** — 오케스트레이터가 해당 교시 관련 부분만 추출:
+  - architecture §3에서 {session_id} 차시 구조: {오케스트레이터가 발췌 삽입}
+  - brainstorm §2에서 {session_id} 관련 활동: {오케스트레이터가 발췌 삽입}
+  - brainstorm §3에서 {session_id} 관련 훅/사례: {오케스트레이터가 발췌 삽입}
+  - brainstorm §4에서 {session_id} 관련 설명전략: {오케스트레이터가 발췌 삽입}
+  - brainstorm §6에서 {session_id} 관련 오개념: {오케스트레이터가 발췌 삽입}
+  - context7 관련 코드: {오케스트레이터가 발췌 삽입}
+
+  **참조 파일** (전체 파일 — 발췌로 부족할 때 직접 Read):
   - {output_dir}/architecture.md
   - {output_dir}/brainstorm_result.md
   - {output_dir}/research_deep.md
   - {output_dir}/input_data.json
   - {output_dir}/context7_reference.md (존재 시)
-  - {output_dir}/context7_block_{block_id}.md (존재 시 — 블록별 정밀 기술 문서)
 
-  **블록 내 content_type 분포**:
-  - 이 블록의 hands-on 차시: {해당 블록의 hands-on 세션 목록}
-  - 이 블록의 concept 차시: {해당 블록의 concept 세션 목록}
-  - 이 블록의 activity 차시: {해당 블록의 activity 세션 목록}
-  - **hands-on 차시에서는 I Do에 fenced code block 필수**
+  **이 교시의 content_type**: {content_type}
+  - **hands-on**: I Do에 fenced code block 필수, 코드 블록 ≥ 3쌍
+  - **concept**: 설명문 ≥ 15줄, ★ 예시 ≥ 2개
+  - **activity**: 활동 지시문 ≥ 5줄, 성공 기준 명시
 
-  **스키마 참조**: `.claude/templates/input-schema-script.json` (script_config 필드 의미·유효값 이해용)
+  **[CRITICAL] 금지 패턴 — 산출물에 포함되면 GATE-6 FAIL**:
+  - "구성안 비유 체계 참조."
+  - "선수 확인 질문"
+  - "강사 시연을 따라 코드 작성"
+  - "다음 차시 주제와의 연결점을 안내합니다."
+  - "해당 SLO 달성 여부 확인"
+  - 모든 차시에 동일한 "필요 자료" 또는 "흔한 실수"
+
+  **[CRITICAL] 필수 포함 — 없으면 GATE-6 FAIL**:
+  - hands-on: 코드 블록(```) ≥ 3쌍, ★ 예시 ≥ 2개, ≥ 150줄
+  - concept: ★ 예시 ≥ 2개, ≥ 120줄
+  - activity: ≥ 100줄
+
+  **스키마 참조**: `.claude/templates/input-schema-script.json`
   **템플릿**: `.claude/templates/script-content-template.md`
-  **산출물**: `{output_dir}/session_D{day}-{num}.md` (블록 내 세션 수만큼 각각 Write)
-  **추가 산출물**: `{output_dir}/code_examples_D{day}-{num}.md` (해당 차시가 hands-on이고 50줄 이상 코드가 있는 경우 선택)
+  **산출물**: `{output_dir}/session_D{day}-{num}.md` (1파일 Write)
 
   **제약**: 도구 Read, Write, Glob만 사용. 외부 검색 없음. Agent 중첩 금지.
 ```
 
-**블록별 미니 검증** (각 블록 Part 완료 후 오케스트레이터 수행):
-1. Glob `{output_dir}/session_D{day}-*.md` → 해당 블록의 차시 파일들 존재 확인
-2. 각 `session_*.md` Read → 도입/I Do/We Do/You Do/정리 5구간 존재 확인
-3. 각 `session_*.md`의 시간 합산이 배정 시간과 일치 확인
+**세션별 미니 검증** (각 세션 Part 완료 후 오케스트레이터 수행):
+1. `{output_dir}/session_D{day}-{num}.md` 존재 확인
+2. `session_*.md` Read → 도입/I Do/We Do/You Do/정리 5구간 존재 확인
+3. 시간 합산이 배정 시간과 일치 확인
+4. **[신규] Bash로 GATE 검증 스크립트 실행**:
+   ```
+   bash .claude/scripts/gate-check-session.sh {output_dir}/session_D{day}-{num}.md {content_type}
+   ```
+   - 스크립트 반환값 0이면 PASS, 1이면 FAIL → 해당 교시 재작성 1회 시도
 
 **GATE-6** (전체 Part 완료 후 — 모든 항목 PASS 시에만 Phase 7 진행):
 
@@ -461,6 +481,9 @@ prompt: |
 | G6-4 | 각 session에 도입/I Do/We Do/You Do/정리 5구간 존재 | Read 각 `session_*.md` | 5구간 | 중단 |
 | G6-5 | 각 session 시간 합산 == 배정 시간 | Read 각 `session_*.md` | 일치 | 중단 |
 | G6-6 | ★ 핵심 예시 최소 2개 존재 (hands-on/concept 차시) | Read 각 해당 `session_*.md` | ≥ 2개 | 중단 |
+| G6-7 | 금지 문구 미존재 | Bash: gate-check-session.sh | 0건 | 해당 교시 재작성 |
+| G6-8 | hands-on 코드 블록 ≥ 3쌍 | Bash: gate-check-session.sh | ≥ 6 fence | 해당 교시 재작성 |
+| G6-9 | session 줄 수 하한 | Bash: gate-check-session.sh | ≥ 120줄 | 해당 교시 재작성 |
 
 **GATE-6 전체 통과 → Phase 7 진행 허용**
 
@@ -535,6 +558,12 @@ prompt: |
 
   **판정 기준**: PASS (Major=0, Minor≤3) / CONDITIONAL PASS (Major=0, Minor≥4) / REVISION REQUIRED (Major≥1)
 
+  **[CRITICAL] 검증 항목 29개(G:5, T:8, C:12, EX:4) 전수 수행 필수.**
+  - Step 2~5의 모든 항목을 각각 개별 검증하고 결과를 산출물에 기록한다
+  - 산출물의 검증 상세 테이블에 29행 이상이 포함되어야 한다
+  - 항목을 그룹으로 묶거나 "Pass"로 일괄 처리하지 않는다
+  - 항목 수 < 29이면 GATE-7 FAIL로 처리되어 재호출된다
+
   **제약**: 도구 Read, Write만 사용. 외부 검색 없음. Agent 중첩 금지.
 ```
 
@@ -578,6 +607,7 @@ prompt: |
 | G7-1 | `_review_content_*.md` 파일 수 == len(blocks[]) | Glob + 카운트 | 일치 | 중단 |
 | G7-2 | 각 판정 != REVISION_REQUIRED | Read 각 `_review_content_*.md` | 전체 PASS 또는 CONDITIONAL | 중단 |
 | G7-3 | blocks[] 전체 블록 ID가 파일명에 매칭 | Glob 패턴 대조 | 전체 일치 | 중단 |
+| G7-4 | review 검증 항목 수 ≥ 29 | Read `_review_content_*.md` → 검증 ID 행 카운트 | ≥ 29 | review-agent 재호출 |
 
 **GATE-7 전체 통과 → Phase 8 진행 허용**
 
@@ -620,12 +650,28 @@ prompt: |
   **템플릿**: `.claude/templates/script-narration-template.md`
   **산출물**: `{output_dir}/narration_D{day}-{num}.md` × 세션 수
 
+  **[CRITICAL] 금지 패턴 — 산출물에 포함되면 GATE-8 FAIL**:
+  - "___" 빈칸 (학습목표, 핵심 요약 등 미완성)
+  - "(강사가 핵심 개념을 설명하고 코드를 시연하는 구간)" 같은 범용 지시문
+  - "(선수지식 확인 발문)", "(학습목표 안내)", "(핵심 3가지 요약)" 같은 placeholder
+  - 40개 파일이 동일한 발화문 (차시별 고유 내용 필수)
+
+  **[CRITICAL] 필수 조건**:
+  - 최소 분량: 80줄 이상
+  - 교안 session_D*.md의 I Do/We Do/You Do 내용을 구어체 발화문으로 변환
+  - 발화문(> ") ≥ 5개, 발문(❓) ≥ 2개
+
   **제약**: Read, Write, Glob만 사용. 외부 검색 없음. Agent 중첩 금지.
 ```
 
-**블록별 미니 검증** (각 블록 완료 후):
-1. Glob으로 해당 블록의 narration_D*.md 존재 확인
-2. 각 narration 파일에 도입/전개/정리 3구간 존재 확인
+**세션별 미니 검증** (각 세션 완료 후):
+1. `narration_D{day}-{num}.md` 존재 확인
+2. narration 파일에 도입/전개/정리 3구간 존재 확인
+3. **[신규] Bash로 GATE 검증 스크립트 실행**:
+   ```
+   bash .claude/scripts/gate-check-narration.sh {output_dir}/narration_D{day}-{num}.md
+   ```
+   - 스크립트 반환값 0이면 PASS, 1이면 FAIL → 해당 교시 재작성 1회 시도
 
 **GATE-8**:
 
@@ -633,6 +679,8 @@ prompt: |
 |----|----------|------|------|--------|
 | G8-1 | narration_D*.md 파일 수 == len(sessions[]) | Glob + 카운트 | 일치 | 중단 |
 | G8-2 | 각 narration에 도입/전개/정리 존재 | Read 각 narration | 3구간 | 중단 |
+| G8-3 | narration `___` 빈칸 0개 | Bash: gate-check-narration.sh | 0건 | 해당 교시 재작성 |
+| G8-4 | narration 줄 수 ≥ 80 | Bash: gate-check-narration.sh | ≥ 80 | 해당 교시 재작성 |
 
 **GATE-8 전체 통과 → Phase 9 진행 허용**
 

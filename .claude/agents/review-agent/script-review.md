@@ -135,6 +135,11 @@ Step 0: 입력 로드
 
 ---
 
+> **[CRITICAL] Step 4~5에서 C-1~C-12(12항목) + EX-1~EX-4(4항목) = 16항목을 각각 개별 검증한다.**
+> **항목을 그룹으로 묶거나 "Pass"로 일괄 처리하지 않는다.**
+> **산출물에 C-1부터 C-12까지, EX-1부터 EX-4까지 각각의 검증 결과(Pass/Major/Minor)를 기록한다.**
+> **항목 수 < 29이면 오케스트레이터가 GATE-7 FAIL로 처리하여 재호출한다.**
+
 ### Step 4: 콘텐츠 정확성 검증 — Anti-Hallucination (C-1~C-12)
 
 | 항목 | 내용 |
@@ -198,8 +203,9 @@ Step 0: 입력 로드
 **동작**:
 
 1. 누적된 검증 결과에서 Major/Minor 위반 수 집계
-2. **판정 결정**: `shared/judgment-criteria.md`의 판정 기준에 따라 판정
-3. `_review_content_{block_id}.md`에 판정 섹션 추가 Write
+2. **검증 항목 수 확인**: 산출물의 검증 상세 테이블에 최소 29행(G:5 + T:8 + C:12 + EX:4)이 포함되어야 한다. 미달 시 누락 항목을 보완하여 재작성한다.
+3. **판정 결정**: `shared/judgment-criteria.md`의 판정 기준에 따라 판정
+4. `_review_content_{block_id}.md`에 판정 섹션 추가 Write
 
 ---
 
