@@ -31,15 +31,15 @@ Step 0: 입력 로드
   │     + 02_script/architecture.md + brainstorm_result.md + research_deep.md + input_data.json (검증 기준-교안)
   │     + 01_outline/lecture_outline.md + 01_outline/architecture.md (검증 기준-구성안)
   │
-  ├── Step 2: 구조 완전성 검증 — 5구간/GRR/확인활동 (G-1~G-4, G-7: 5항목)
+  ├── Step 1: 구조 완전성 검증 — 5구간/GRR/확인활동 (G-1~G-4, G-7: 5항목)
   │
-  ├── Step 3: 시간 배분 현실성 검증 (T-1~T-8: 8항목)
+  ├── Step 2: 시간 배분 현실성 검증 (T-1~T-8: 8항목)
   │
-  ├── Step 4: 콘텐츠 정확성 검증 — Anti-Hallucination (C-1~C-12: 12항목)
+  ├── Step 3: 콘텐츠 정확성 검증 — Anti-Hallucination (C-1~C-12: 12항목)
   │
-  ├── Step 5: 교안 예시 품질 검증 (EX-1~EX-4: 4항목)
+  ├── Step 4: 교안 예시 품질 검증 (EX-1~EX-4: 4항목)
   │
-  └── Step 6: 블록 판정 통합 → _review_content_{block_id}.md Write
+  └── Step 5: 블록 판정 통합 → _review_content_{block_id}.md Write
 ```
 
 **단일 파일 Write 패턴**: 중간 파일 없이 `_review_content_{block_id}.md`에 단계별 결과를 순차 Write한다.
@@ -79,7 +79,7 @@ Step 0: 입력 로드
 
 ---
 
-### Step 2: 구조 완전성 검증 (G-1~G-4, G-7)
+### Step 1: 구조 완전성 검증 (G-1~G-4, G-7)
 
 | 항목 | 내용 |
 |------|------|
@@ -110,7 +110,7 @@ Step 0: 입력 로드
 
 ---
 
-### Step 3: 시간 배분 현실성 검증 (T-1~T-8)
+### Step 2: 시간 배분 현실성 검증 (T-1~T-8)
 
 | 항목 | 내용 |
 |------|------|
@@ -135,12 +135,12 @@ Step 0: 입력 로드
 
 ---
 
-> **[CRITICAL] Step 4~5에서 C-1~C-12(12항목) + EX-1~EX-4(4항목) = 16항목을 각각 개별 검증한다.**
+> **[CRITICAL] Step 3~4에서 C-1~C-12(12항목) + EX-1~EX-4(4항목) = 16항목을 각각 개별 검증한다.**
 > **항목을 그룹으로 묶거나 "Pass"로 일괄 처리하지 않는다.**
 > **산출물에 C-1부터 C-12까지, EX-1부터 EX-4까지 각각의 검증 결과(Pass/Major/Minor)를 기록한다.**
 > **항목 수 < 29이면 오케스트레이터가 GATE-7 FAIL로 처리하여 재호출한다.**
 
-### Step 4: 콘텐츠 정확성 검증 — Anti-Hallucination (C-1~C-12)
+### Step 3: 콘텐츠 정확성 검증 — Anti-Hallucination (C-1~C-12)
 
 | 항목 | 내용 |
 |------|------|
@@ -169,7 +169,7 @@ Step 0: 입력 로드
 
 ---
 
-### Step 5: 교안 예시 품질 검증 (EX-1~EX-4)
+### Step 4: 교안 예시 품질 검증 (EX-1~EX-4)
 
 | 항목 | 내용 |
 |------|------|
@@ -192,11 +192,11 @@ Step 0: 입력 로드
 
 ---
 
-### Step 6: 블록 판정 통합
+### Step 5: 블록 판정 통합
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | `_review_content_{block_id}.md` (Step 2~5 결과 누적본) |
+| 입력 | `_review_content_{block_id}.md` (Step 1~4 결과 누적본) |
 | 도구 | Read, Write |
 | 산출물 | `_review_content_{block_id}.md` (판정 섹션 추가 Write) |
 

@@ -70,7 +70,7 @@ Step 2: (통합은 Phase 10 오케스트레이터가 수행)
 
 | 항목 | 내용 |
 |------|------|
-| 입력 | session_D*.md (교안 콘텐츠), architecture.md, brainstorm_result.md §1(발문)·§3(훅), input_data.json |
+| 입력 | session_D*.md (교안 콘텐츠), architecture.md, brainstorm_result.md §1(발문)·§3(훅), input_data.json, code_examples_D{day}-{num}.md (존재 시) |
 | 도구 | Read |
 | 산출물 | (내부 컨텍스트) |
 

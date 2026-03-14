@@ -85,30 +85,26 @@ Step 0: 입력 로드 + 검증 (GAIDE Setup)
 | 조건 | 모드 | Part 수 |
 |------|------|---------|
 | `total_sessions ≤ 10` | 단일 모드 | 1 |
-| `total_sessions > 10` | 블록별 분할 | blocks + 2 |
+| `total_sessions > 10` | 세션별 분할 | sessions + 2 |
 
-블록 수와 경계는 오케스트레이터가 architecture.md 시간표를 파싱하여 동적으로 결정한다:
-- 각 Day에 30분 이상 공백(점심 등)이 있고 `sessions_in_day ≥ 6`이면 AM/PM 2블록으로 분할
-- 그 외에는 Day 전체를 1블록으로 처리
-- 블록 ID: `D{day}_{AM|PM}` (분할 시) 또는 `D{day}` (미분할 시)
+오케스트레이터가 architecture.md 시간표를 파싱하여 세션 목록을 동적으로 결정한다.
 
-#### 블록별 분할 모드 (동적) — 차시별 독립 파일
+#### 세션별 분할 모드 — 1교시 단위 호출
 
 | Part | 범위 | Step | 산출물 |
 |------|------|------|--------|
 | Part 0/{N} | §1~§3 | Step 0~2 | `_header.md` (Write 신규) |
-| Part 1/{N} | §4 blocks[0] 세션들 | Step 3 (블록 세션만) | `session_D{day}-{num}.md` × 세션 수 (각각 Write 신규) |
-| ... | §4 blocks[K] 세션들 | Step 3 (블록 세션만) | `session_D{day}-{num}.md` × 세션 수 (각각 Write 신규) |
-| Part B/{N} | §4 blocks[B-1] 세션들 | Step 3 (마지막 블록) | `session_D{day}-{num}.md` × 세션 수 (각각 Write 신규) |
+| Part 1/{N} | §4 세션 D{day}-{num} | Step 3 (1교시) | `session_D{day}-{num}.md` (1파일 Write 신규) |
+| ... | §4 세션 D{day}-{num} | Step 3 (1교시) | `session_D{day}-{num}.md` (1파일 Write 신규) |
 | Part {N}/{N} | §5~§8 | Step 4~5 | `_footer.md` (Write 신규) |
 
-**핵심**: 호출 단위는 **블록** 유지, 산출물은 **차시별 독립 파일**로 분리.
+**핵심**: 호출 단위는 **1교시**, 산출물은 **차시별 독립 파일**.
 
 ```
-변경:  writer-agent(D1-AM) → session_D1-1.md, session_D1-2.md, session_D1-3.md, session_D1-4.md (4파일 독립 Write)
+변경:  writer-agent(D1-1) → session_D1-1.md (1파일 Write)
 ```
 
-이유: 호출 수 최소화(8회 유지) + 차시별 독립 파일 이점 + 블록 내 용어 일관성 유지
+이유: 콘텐츠 생성 집중도 확보 + 오케스트레이터가 해당 교시 입력을 발췌 전달
 
 **예시: 3일×8시간 (6블록 → 8 Part)**
 

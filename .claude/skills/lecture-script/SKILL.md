@@ -397,7 +397,7 @@ prompt: |
 3. 각 키워드에 대해 `query-docs`(libraryId, query=영어_기술_키워드) 호출
    - query 작성: Phase 5와 동일 가이드 — 구체적 영어 기술 키워드
    - 예: 세션 D1-1에 "Spring Boot project setup" 주제가 있으면 `query="spring initializr project structure dependencies"`
-4. 수집 결과를 `{output_dir}/context7_session_{session_id}.md`에 저장
+4. 수집 결과를 `{output_dir}/context7_block_{block_id}.md`에 저장 (세션별 호출이지만 동일 블록의 세션들이 같은 기술 문서를 공유)
    - 구조: 세션 ID, 라이브러리별 쿼리 결과 (API 시그니처, 코드 스니펫, 관련 문서)
 5. writer-agent 호출 prompt의 입력에 추가
 
@@ -549,12 +549,11 @@ prompt: |
 
   **산출물**: `{output_dir}/_review_content_{block_id}.md`
 
-  **검증 영역 (교안 범위)**:
-  1. 교수설계 프레임워크 (G-1~G-6): GRR 4단계, 2-레이어, 15분 분절, 도입/I Do/We Do/You Do/정리 5구간
-  2. 학습활동/흐름 (P-1~P-5): CMU 3점, 차시 간 전환, You Do 완전성
-  3. 시간 배분 (T-1~T-8): 교시 시간 합산, 비율 준수, GRR 시간, 시간큐
-  4. 콘텐츠 정확성 (C-1~C-12): Anti-Hallucination, CLO/SLO 일치, 소재 근거, 코드 API 정확성(C-10), 다중 예시 완전성(C-11), 플레이스홀더 잔존(C-12)
-  5. 교안 콘텐츠 품질 (N-1~N-6): 활동 3요소, You Do 완전성, 핵심 예시 충분성
+  **검증 영역 (교안 범위 — script-review.md 교안 검토 모드 기준)**:
+  1. 구조 완전성 (G-1~G-4, G-7): 5구간 완전성, GRR 순차, GRR 시간 배분, 확인 활동 삽입 (5항목)
+  2. 시간 배분 현실성 (T-1~T-8): 교시 합산, time_ratio, GRR 비율, 15분 분절, 시간큐 연속성 (8항목)
+  3. 콘텐츠 정확성 (C-1~C-12): CLO/SLO 대조, 소재 근거, 코드 API 정확성(C-9), 코드 밀도(C-10), 플레이스홀더(C-11~C-12) (12항목)
+  4. 교안 예시 품질 (EX-1~EX-4): ★ 예시 ≥2개(EX-1), You Do 완전성(EX-2), 오개념 반영(EX-4) (4항목)
 
   **판정 기준**: PASS (Major=0, Minor≤3) / CONDITIONAL PASS (Major=0, Minor≥4) / REVISION REQUIRED (Major≥1)
 
@@ -792,6 +791,11 @@ prompt: |
 - narration의 `## 정리` → 교안의 `## 정리` 뒤에 삽입
 - 매칭 실패 시: 해당 narration 구간을 교안 마지막에 `> 🎤 대본 (매칭 실패)` 블록으로 추가
 
+**_header.md / _footer.md 처리**:
+- `_header.md`(§1~§3)와 `_footer.md`(§5~§8)는 block 파일에 포함하지 않는다
+- block 파일은 §4(차시별 교안+대본)만 담는 독립 실행 문서이다
+- _header.md와 _footer.md는 별도 참조 문서로 유지하며, 필요 시 강사에게 별도 배포한다
+
 **GATE-10-1**:
 
 | ID | 검증 내용 | 방법 | 기준 | 실패 시 |
@@ -831,7 +835,7 @@ prompt: |
   **산출물**: `{output_dir}/quality_review.md`
 
   **통합 검증 영역 (~15항목)**:
-  1. 구조 완전성 (S-1~S-5): 블록 파일 전체 존재, 표기법, 서브섹션, 차시 커버리지
+  1. 구조 완전성 (S-1~S-7): 블록 파일 전체 존재, 메타데이터, 필수 테이블, 플레이스홀더, 표기법, 서브섹션, 차시 커버리지
   2. 블록 간 전환 일관성: AM→PM, Day간 전환 문구 자연스러움
   3. SLO 커버리지 전체 확인: 모든 SLO가 블록 파일에서 다뤄지는지
   4. 교안-대본 정합성: 교안 콘텐츠와 대본 발화문의 내용 일관성
