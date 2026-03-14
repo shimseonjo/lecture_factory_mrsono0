@@ -108,10 +108,10 @@ architecture.md가 없으면 → `primary_type: "sectional_check"` 기본값 적
 
 | 교수 모델 | 도입 | 전개 | 정리 |
 |----------|------|------|------|
-| direct_instruction | 10 | 60 | 30 |
-| pbl | 10 | 75 | 15 |
-| flipped | 5 | 80 | 15 |
-| mixed | 10 | 70 | 20 |
+| direct_instruction | 16 | 74 | 10 |
+| pbl | 14 | 78 | 8 |
+| flipped | 10 | 82 | 8 |
+| mixed | 14 | 76 | 10 |
 
 #### S4b. 교수설계 모델 매핑 → S1a 교수 모델에서 자동 파생
 

@@ -106,28 +106,28 @@ Step 0: 입력 로드 + 검증 (GAIDE Setup)
 
 이유: 콘텐츠 생성 집중도 확보 + 오케스트레이터가 해당 교시 입력을 발췌 전달
 
-**예시: 3일×8시간 (6블록 → 8 Part)**
+**예시: 3일×8시간 (24세션 → 26 Part)**
 
 | Part | 범위 | 산출물 |
 |------|------|--------|
-| Part 0/8 | §1~§3 | `_header.md` |
-| Part 1/8 | §4 D1-AM | `session_D1-1.md`, `session_D1-2.md`, `session_D1-3.md`, `session_D1-4.md` |
-| Part 2/8 | §4 D1-PM | `session_D1-5.md`, `session_D1-6.md`, `session_D1-7.md`, `session_D1-8.md` |
-| Part 3/8 | §4 D2-AM | `session_D2-1.md`, `session_D2-2.md`, `session_D2-3.md`, `session_D2-4.md` |
-| Part 4/8 | §4 D2-PM | `session_D2-5.md`, `session_D2-6.md`, `session_D2-7.md`, `session_D2-8.md` |
-| Part 5/8 | §4 D3-AM | `session_D3-1.md`, `session_D3-2.md`, `session_D3-3.md`, `session_D3-4.md` |
-| Part 6/8 | §4 D3-PM | `session_D3-5.md`, `session_D3-6.md`, `session_D3-7.md`, `session_D3-8.md` |
-| Part 7/8 | §5~§8 | `_footer.md` |
+| Part 0/26 | §1~§3 | `_header.md` |
+| Part 1/26 | §4 세션 D1-1 | `session_D1-1.md` |
+| Part 2/26 | §4 세션 D1-2 | `session_D1-2.md` |
+| Part 3/26 | §4 세션 D1-3 | `session_D1-3.md` |
+| ... | ... | ... |
+| Part 24/26 | §4 세션 D3-8 | `session_D3-8.md` |
+| Part 25/26 | §5~§8 | `_footer.md` |
 
-**예시: 3일×4시간 (3블록 → 5 Part)**
+**예시: 3일×4시간 (12세션 → 14 Part)**
 
 | Part | 범위 | 산출물 |
 |------|------|--------|
-| Part 0/5 | §1~§3 | `_header.md` |
-| Part 1/5 | §4 D1 | `session_D1-1.md`, `session_D1-2.md`, `session_D1-3.md`, `session_D1-4.md` |
-| Part 2/5 | §4 D2 | `session_D2-1.md`, `session_D2-2.md`, `session_D2-3.md`, `session_D2-4.md` |
-| Part 3/5 | §4 D3 | `session_D3-1.md`, `session_D3-2.md`, `session_D3-3.md`, `session_D3-4.md` |
-| Part 4/5 | §5~§8 | `_footer.md` |
+| Part 0/14 | §1~§3 | `_header.md` |
+| Part 1/14 | §4 세션 D1-1 | `session_D1-1.md` |
+| Part 2/14 | §4 세션 D1-2 | `session_D1-2.md` |
+| ... | ... | ... |
+| Part 12/14 | §4 세션 D3-4 | `session_D3-4.md` |
+| Part 13/14 | §5~§8 | `_footer.md` |
 
 #### 차시별 독립 파일 작성 규칙
 

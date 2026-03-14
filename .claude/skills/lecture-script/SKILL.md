@@ -2,7 +2,7 @@
 name: lecture-script
 description: 강의교안 생성 - 10단계 파이프라인 (입력수집 → 탐색리서치 → 브레인스토밍 → 심화리서치 → 구조설계 → 교안작성 → 교안검토 → 대본생성 → 대본검토 → 블록통합)
 context: fork
-allowed-tools: Agent, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion, TodoWrite, mcp__context7__resolve-library-id, mcp__context7__query-docs
+allowed-tools: Agent, Bash, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion, TodoWrite, mcp__context7__resolve-library-id, mcp__context7__query-docs
 ---
 
 # 강의교안 생성 워크플로우
@@ -816,7 +816,7 @@ prompt: |
   라우팅에 따라 `script-review.md`를 로드하여
   **통합 검토 모드**를 따르세요.
 
-  **검증 대상**: `{output_dir}/block_D*.md` (전체 블록 파일들)
+  **검증 대상**: `{output_dir}/block_D*.md` (전체 블록 파일들) + `{output_dir}/_header.md` + `{output_dir}/_footer.md`
   **교안 검토 결과**: `{output_dir}/_review_content_*.md`
   **대본 검토 결과**: `{output_dir}/_review_narration_*.md`
 
